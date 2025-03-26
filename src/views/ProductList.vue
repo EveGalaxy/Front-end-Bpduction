@@ -4,7 +4,7 @@
         <div class="dropdown-container" ref="dropdownRef">
             <!-- ปุ่มกดเลือกประเภทสินค้า -->
             <span @click="toggleDropdown" class="dropdown-btn">
-                {{ selectedCategory || "เลือกประเภทสินค้า" }} ⬇
+                {{ selectedCategory || "เลือกประเภทสินค้า" }} 
             </span>
 
             <!-- Dropdown เมนู -->
@@ -19,12 +19,28 @@
         <div class="product">
 
         </div>
-        <div class="product" style="margin-left: -520px;">
+        <div class="product" style="margin-left: -590px;">
 
         </div>
-        <div class="product" style="margin-left: -270px;">
+        <div class="product" style="margin-left: -340px;">
 
         </div>
+        <div class="product" style="margin-left: -90px;">
+
+        </div>
+        <div class="product" style="margin-top: 180px;">
+
+        </div>
+        <div class="product" style="margin-left: -590px; margin-top: 180px;">
+
+        </div>
+        <div class="product" style="margin-left: -340px; margin-top: 180px;">
+
+        </div>
+        <div class="product" style="margin-left: -90px; margin-top: 180px;">
+
+        </div>
+        <button class="backtosearch">กลับหน้าค้นหาสินค้า</button>
     </div>
 </template>
 
@@ -65,7 +81,7 @@
   position: fixed;
   margin-top: -50px;
   margin-bottom: 10px;
-  margin-left: -770px;
+  margin-left: -840px;
   height: 10px;
   width: 10px;
 }
@@ -84,7 +100,7 @@
   cursor: pointer;
   text-align: center;
   border-radius: 5px;
-  margin-left: -150px;
+  margin-left: -200px;
   background-color: rgb(255, 120, 255);
 }
 
@@ -96,7 +112,7 @@
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   margin-top: 5px;
   list-style: none;
-  margin-left: -270px;
+  margin-left: -320px;
   padding: 0;
 }
 
@@ -119,6 +135,24 @@
   transform: translateY(-10px);
 }
 
+button.backtosearch {
+  width: 100%;
+  padding: 20px;
+  background-color: #006eb3;
+  color: rgb(85, 255, 43);
+  border:2px solid blue;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 20px;
+  -webkit-text-stroke: 0.5px rgb(0, 228, 0);
+  margin-left: -2270px;
+  margin-top: 300px;
+}
+
+button.backtosearch:hover {
+  background-color: #64f0ff;
+}
+
 </style>
 
 <script setup>
@@ -129,7 +163,7 @@ const selectedCategory = ref(null);
 const dropdownRef = ref(null);
 
 // รายการประเภทสินค้า
-const categories = ref(["เสื้อผ้า", "อุปกรณ์อิเล็กทรอนิกส์", "เครื่องใช้ไฟฟ้า", "ของใช้ในบ้าน"]);
+const categories = ref(["All", "อาหาร", "อุปกรณ์อิเล็กทรอนิกส์", "ของใช้ทั่วไป"]);
 
 // เปิด/ปิด Dropdown
 const toggleDropdown = () => {
