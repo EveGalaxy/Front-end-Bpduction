@@ -114,3 +114,15 @@ button.cancel {
 }
 
 </style>
+
+<script setup>
+import { useRoute } from "vue-router";
+import { watch } from "vue";
+
+const route = useRoute();
+
+// เปลี่ยนสีพื้นหลังตาม meta.bgColor
+watch(route, () => {
+  document.body.style.backgroundColor = route.meta.bgColor || "pink";
+});
+</script>
