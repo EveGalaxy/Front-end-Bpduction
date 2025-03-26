@@ -3,12 +3,20 @@
         <img :src="imageUrl" alt="Description" class="pBrand"/>
         <h2 class="logintitle">BPDuction</h2>
         <div class="Userlogin">
-          <label class="usernametitle">Username</label>
-          <label class="passwordtitle">Password</label><br>
-          <input type="text" id="username" v-bind:style="{ fontSize: '20px', paddingRight: '250px' }">
-          <input type="text" id="password" v-bind:style="{ fontSize: '20px', paddingRight: '250px' }">
+          <form @submit.prevent="handleLogin">
+            <div class="form-group">
+              <label for="email">Username</label>
+              <input type="email" id="email" v-model="email" required />
+            </div>
 
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input type="password" id="password" v-model="password" required />
+            </div>
 
+            <button type="submit" class="login">Login</button>
+            <button type="submit" class="signup">Sign Up</button>
+          </form>
         </div>
     </div>
 </template>
@@ -17,9 +25,21 @@
 export default {
   data() {
     return {
-        imageUrl: require('@/assets/duck-logo.webp')
+        imageUrl: require('@/assets/duck-logo.webp'),
+        email: "",
+        password: "",
     }
-  }
+  },
+  methods: {
+    handleLogin() {
+      if (this.email && this.password) {
+        console.log("Logging in with:", this.email, this.password);
+        // ส่งข้อมูลไปยัง API หรือดำเนินการตรวจสอบการเข้าสู่ระบบที่นี่
+      } else {
+        alert("กรุณากรอกอีเมลและรหัสผ่าน");
+      }
+    },
+  },
 }
 </script>
 
@@ -59,23 +79,64 @@ export default {
   height: 100px;
   width: 250px;
 }
-.passwordtitle{
-  margin-left: -1080px;
-  padding-bottom: -100px;
+
+.form-group {
+  margin-left: -500px;
+  margin-bottom: 15px;
 }
-.usernametitle{
-  margin-left: -2080px;
-  padding-bottom: -100px;
-}
-#password{
-  margin-top: 0px;
-  margin-left: 200px;
-}
-#username{
-  margin-top: 0px;
-  margin-left: -1150px;
-}
+
 body{
     background-color: #6fd78f;
+}
+
+
+#email {
+  width: 50%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+#password {
+  width: 50%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+button.login {
+  width: 50%;
+  padding: 10px;
+  background-color: #006eb3;
+  color: rgb(85, 255, 43);
+  border:2px solid blue;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 20px;
+  -webkit-text-stroke: 0.5px rgb(0, 228, 0);
+  margin-left: -1050px;
+  margin-top: 110px;
+}
+
+button.login:hover {
+  background-color: #64f0ff;
+}
+
+button.signup {
+  width: 50%;
+  padding: 10px;
+  background-color: #ff8000;
+  color: rgb(255, 241, 43);
+  border:2px solid rgb(255, 0, 0);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 20px;
+  -webkit-text-stroke: 0.5px rgb(255, 247, 5);
+  margin-left: 50px;
+  margin-top: 110px;
+}
+
+button.signup:hover {
+  background-color: #ff6464;
 }
 </style>
