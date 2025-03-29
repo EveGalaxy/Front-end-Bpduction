@@ -27,7 +27,11 @@
         </a>
     </div>
     </div><br>
-    <img :src="imageUrl" alt="product in shelves" class="shelves">
+    <img :src="imageUrl" alt="product in shelves" class="shelves"><br>
+    <div class="btnunder">
+        <button class="productlist" @click="gotoProductList()">แสดงรายการสินค้า</button> 
+        <button class="logout" @click="logoutSystem()">Log Out</button> 
+    </div>
 </template>
 
 <style>
@@ -115,6 +119,32 @@
     border-color: #fff;
     box-shadow: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
 }
+button.productlist {
+    background-color: #4bf9ff;
+    border: 2px solid  #000000;
+    color: rgb(0, 0, 0);
+    padding: 0.75em 1.5em;
+    margin: 0 .5em;
+    cursor: pointer;
+    margin-top: 20px;
+    margin-bottom: 50px;
+    margin-right: 50px;
+    padding-left: 50px;
+    padding-right: 50px;
+}
+button.logout {
+    background-color: #ff4848;
+    border: 2px solid  #000000;
+    color: rgb(0, 0, 0);
+    padding: 0.75em 1.5em;
+    margin: 0 .5em;
+    cursor: pointer;
+    margin-top: 20px;
+    margin-bottom: 50px;
+    margin-right: 50px;
+    padding-left: 50px;
+    padding-right: 50px;
+}
 </style>
 
 <script>
@@ -123,6 +153,14 @@ export default {
     return {
         imageUrl: require('@/assets/shelves1.jpg'),
     }
+  },
+  methods: {
+    gotoProductList(){
+      this.$router.replace('/product-list');
+    },
+    logoutSystem() {
+      this.$router.replace('/login');
+    },
   }
 }
 </script>
