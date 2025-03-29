@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import BeaconView from '../views/BeaconView.vue'
 import LoginView from '@/views/LoginView.vue'
 import ProductList from '@/views/ProductList.vue'
+import SearchProduct from '@/views/SearchProduct.vue'
+import SignUpView from '@/views/SignUpView.vue'
 
 const routes = [
   {
@@ -29,6 +31,18 @@ const routes = [
     name: 'product-list',
     component: ProductList,
     meta: { bgColor: "orange" }
+  },
+  {
+    path: '/search-product',
+    name: 'search-product',
+    component: SearchProduct,
+    meta: { bgColor: "lightgreen" }
+  },
+  {
+    path: '/sign-up',
+    name: 'sign-up',
+    component: SignUpView,
+    meta: { bgColor: "lavender" }
   }
 ]
 
