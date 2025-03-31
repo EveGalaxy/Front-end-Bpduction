@@ -1,7 +1,10 @@
 <template>
-    <div class="SignUptemplate">
-        <h2 class="titleSignup">Sign Up</h2>
-    </div><br>
+    <div class="SignupLeftView">
+        <img src="@/assets/SignUpImage.jpg" alt="Sign Up Image" class="signup-image">
+        <div class="SignUptemplate">
+            <h2 class="titleSignup">Sign Up</h2>
+        </div>
+    </div>
     <div class="card-body px-lg-5 py-lg-5">
         <form role="form" class="signup-form">
             <div class="form-group mb-3">
@@ -12,7 +15,7 @@
                             </i>
                         </span>
                     </div>
-                    <input placeholder="Username" type="text" class="form-control" fdprocessedid="kdzzh">
+                    <input v-model="formData.username" placeholder="Username" type="text" class="form-control" fdprocessedid="kdzzh">
                 </div>
             </div>
             <div class="form-group mb-3">
@@ -23,7 +26,7 @@
                             </i>
                         </span>
                     </div>
-                    <input placeholder="Email" type="email" class="form-control" fdprocessedid="j5d95">
+                    <input v-model="formData.email" placeholder="Email" type="email" class="form-control" fdprocessedid="j5d95">
                 </div>
             </div>
             <div class="form-group">
@@ -34,7 +37,7 @@
                             </i>
                         </span>
                     </div>
-                    <input placeholder="Password" type="password" class="form-control" fdprocessedid="abdeln">
+                    <input v-model="formData.password" placeholder="Password" type="password" class="form-control" fdprocessedid="abdeln">
                 </div>
             </div>
             <div class="custom-control custom-control-alternative custom-checkbox">
@@ -58,7 +61,7 @@
                 </label>
             </div>
             <div class="text-center">
-                <button type="button" class="btn-primary mt-4" fdprocessedid="9jl2er" @click="gotoLogin()">Sign Up</button>
+                <button type="button" class="btn-primary mt-4" fdprocessedid="9jl2er" @click="handleSignUp()">Sign Up</button>
             </div>
         </form>
     </div>
@@ -70,18 +73,29 @@
 .bg-secondary {
     background-color: #6c757d !important;
 }
-.btn-primary, .btn-primary:hover {
+.btn-primary{
     color: #fff;
     background-color: #5e72e4;
-    border-color: #5e72e4;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* เพิ่มเงาให้ปุ่มดูเด่นขึ้น */
+    cursor: pointer;
+    padding: 12px 15px;
     position: relative;
     text-transform: uppercase;
+    transition: all 0.3s ease-in-out;
     -webkit-transition: all .15s ease;
     transition: all .15s ease;
     will-change: transform;
     letter-spacing: .025em;
     font-size: 1.5rem;
+    font-weight: bold;
     width: 20%;
+}
+.btn-primary:hover {
+    background-color: #3d56d6;
+    box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.3); /* เพิ่มเงาเมื่อ hover */
+    transform: scale(1.05); /* ทำให้ปุ่มขยายเล็กน้อยเมื่อ hover */
 }
 .card {
     position: relative;
@@ -107,9 +121,10 @@
     justify-self: end;
     margin-right: 100px;
     padding-top: 150px;
+    margin-top: 130px;
 }
 .custom-control{
-    margin-top: 150px;
+    margin-top: 0px;
     margin-bottom: -150px;
     margin-left: 100px;
 }
@@ -133,18 +148,20 @@
 .form-control {
     display: block;
     width: 100%;
-    height: calc(2.75rem + 2px);
-    padding: .625rem .75rem;
+    height: 20px;
+    padding: 10px 10px 10px 40px;
     font-size: 1rem;
     line-height: 1.5;
     color: #8898aa;
     background-color: #fff;
     background-clip: padding-box;
     border: 1px solid #cad1d7;
-    border-radius: .25rem;
+    border-radius: 0 .25rem .25rem 0;
     box-shadow: none;
     -webkit-transition: all .2s cubic-bezier(.68,-.55,.265,1.55);
     transition: all .2s cubic-bezier(.68,-.55,.265,1.55);
+    padding-left: 50px;
+    outline: none;
 }
 .input-group {
     position: relative;
@@ -152,9 +169,12 @@
     display: flex;
     flex-wrap: wrap;
     -webkit-box-align: stretch;
-    align-items: stretch;
+    align-items: center;
     width: 40%;
-    margin-left: 600px;
+    margin-left: 620px;
+    overflow: hidden;
+    margin-top: 20px;
+    margin-bottom: 20px;
 }
 .input-group-alternative {
     box-shadow: 0 1px 3px rgba(50, 50, 93, .15), 0 1px 0 rgba(0, 0, 0, .02);
@@ -162,17 +182,21 @@
     -webkit-transition: box-shadow .15s ease;
     transition: box-shadow .15s ease;
 }
-.input-group-append, .input-group-prepend {
+.input-group-prepend {
     display: -webkit-box;
     display: flex;
+    position: absolute;
+    left: 0;
+    height: 100%;
     margin-right: -1px;
+    align-items: center;
 }
 .input-group-text {
     display: -webkit-box;
     display: flex;
     -webkit-box-align: center;
     align-items: center;
-    padding: .625rem .75rem;
+    padding: 0 15px;
     margin-bottom: 0;
     font-size: 1rem;
     font-weight: 400;
@@ -182,7 +206,11 @@
     white-space: nowrap;
     background-color: #fff;
     border: 1px solid #cad1d7;
-    border-radius: .25rem;
+    border-right: none; /* ลบเส้นขอบขวาเพื่อให้แนบสนิทกับ input */
+    border-radius: .25rem 0 0 .25rem; /* ทำให้ขอบโค้งด้านซ้าย */
+    position: absolute;
+    height: 96.2%;
+    left: 0px;
 }
 .signup-form{
     width: 95%; /* ให้ form กว้างเกือบสุด */
@@ -246,12 +274,40 @@
   border-color: red;
 }
 
+.signup-image {
+    width: 100%; /* ทำให้ภาพอยู่ในพื้นที่ SignupLeftView */
+    height: 100%;
+    margin-right: 30px; /* เพิ่มช่องว่างระหว่างภาพและฟอร์ม */
+    margin-top: -20px; /* ชิดขอบด้านบนของ Navbar */
+    margin-left: 0; /* ทำให้ภาพชิดซ้ายสุด */
+    object-fit: cover;
+}
+
+.SignupLeftView {
+    display: flex;
+    align-items: flex-start; /* จัดให้อยู่ด้านบนสุดของ container */
+    justify-content: flex-start; /* ชิดซ้าย */
+    top: 130px;
+    left: 0; /* ติดขอบซ้าย */
+    margin-top: -29px; /* ปรับให้ชิดกับ Navigation Bar */
+    position: fixed;
+    width: 30%; /* กำหนดขนาดให้ไม่เกิน card-body */
+    height: 100vh;
+    z-index: 1; /* อยู่ด้านล่าง Sign Up Title */
+}
+
 .SignUptemplate{
+    border-radius: 5px;
     display: inline-flex;
     margin-left: -1200px;
     margin-top: 50px;
-    padding: 2px;
-    position: flex;
+    padding: 10px;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    left: 50%; /* ปรับตำแหน่งตามต้องการ */
+    background: rgba(255, 255, 255, 0.7); /* ใส่พื้นหลังโปร่งใสให้ตัวหนังสืออ่านง่าย */
+    z-index: 2; /* ให้ตัวหนังสืออยู่หน้ารูป */
 }
 .shadow {
     box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
@@ -263,8 +319,12 @@
     text-align: center;
 }
 .titleSignup{
-    color: rgb(0, 128, 28);
-    font-size: 1.5rem;
+    font-size: 3rem; /* ขนาดใหญ่ขึ้น */
+    font-weight: bold;
+    color: #ffc874; /* สีสันสดใส */
+    position: absolute;
+    text-transform: uppercase;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
 }
 </style>
 
@@ -276,11 +336,23 @@ export default{
             options: [
                 { value: "user", label: "User" },
                 { value: "admin", label: "Admin" }
-            ]
+            ],
+            formData: {
+                username: "",
+                email: "",
+                password: ""
+            }
         };
     },
     methods: {
-        gotoLogin(){
+        handleSignUp(){
+            if (!this.formData.username || !this.formData.email || !this.formData.password) {
+                alert("Please fill in all fields!");
+                return;
+            }
+            
+            console.log("User Data:", this.formData);
+            alert("User data saved successfully!");
             this.$router.replace('/login');
         }
     }
