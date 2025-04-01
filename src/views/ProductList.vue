@@ -28,7 +28,7 @@
           <h2 class="card-title">{{ item.name }}</h2>
           <p>{{ item.description }}</p>
           <div class="card-actions justify-end">
-            <button class="btn btn-primary">Buy Now</button>
+            <button class="btn btn-primary">Details</button>
           </div>
         </div>
       </div>
@@ -127,52 +127,69 @@ button.backtosearch:hover {
 .card-bg {
   background-color: #64f0ff;
   border: 2px solid black;
-  padding: 0;
   text-align: center;
   border-radius: 10px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  height: 250px; /* ปรับขนาดตามต้องการ */
+  height: auto; /* ปรับให้ขยายตามเนื้อหา */
+  max-width: 100%; /* ป้องกันการขยายเกิน */
 }
 
 .card-bg figure {
   width: 100%;
-  height: 40%; /* ปรับให้สูงขึ้นเพื่อให้เห็นภาพได้ชัดขึ้น */
-  margin: 0; /* ลบ margin ออกเพื่อให้ติดขอบ */
-  padding: 0; /* ลบ padding ออกเพื่อให้ติดขอบ */
+  height: 250px; /* ความสูงของภาพ */
   overflow: hidden;
+  margin: 0; /* ลบ margin ออก */
+  padding: 0; /* ลบ padding ออก */
 }
 
 .card-bg img {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* ป้องกันการยืดภาพ */
+  object-fit: cover; /* ให้ภาพเติมเต็มพื้นที่ */
   display: block; /* ป้องกันช่องว่างรอบรูป */
 }
 
+/* จัดให้ card-title อยู่ตรงกลาง card-body */
 .card-body {
   flex-grow: 1;
-  padding: 10px;
+  padding: 15px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center; /* จัดให้อยู่ตรงกลางแนวตั้ง */
+  align-items: center; /* จัดให้อยู่ตรงกลางแนวนอน */
+  text-align: center;
+}
+
+/* ลบคำอธิบายสินค้าออก */
+.card-body p {
+  display: none;
 }
 
 .card-title {
-  font-size: 18px;
+  font-size: 20px; /* ขยายขนาดตัวอักษร */
   font-weight: bold;
-  margin-top: 10px;
+  margin-top: 15px; /* เพิ่มระยะห่างจากปุ่ม */
+  margin-left: 0px;
 }
 
+/* ปรับสไตล์ของปุ่ม Buy Now */
 .card-actions .btn-primary {
-  background-color: #007bff;
-  color: white;
+  background-color: #28a745; /* สีเขียวเข้ม */
+  color: #ffffff; /* ตัวอักษรสีขาว */
   border: none;
-  padding: 10px 15px;
-  border-radius: 5px;
+  padding: 14px 24px; /* ขยายขนาดปุ่ม */
+  border-radius: 8px;
+  font-size: 20px; /* ขยายขนาดตัวอักษร */
+  font-weight: bold; /* ทำให้ตัวอักษรหนา */
   cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.card-actions .btn-primary:hover {
+  background-color: #218838; /* สีเขียวอ่อนเมื่อโฮเวอร์ */
 }
 </style>
 
@@ -190,11 +207,11 @@ const products = ref([
   { id: 1, name: "ข้าวมันไก่", description: "ข้าวมันไก่สูตรพิเศษ", image: new URL('@/assets/Food1.jpg', import.meta.url).href },
   { id: 2, name: "แล็ปท็อป", description: "แล็ปท็อปสำหรับทำงาน", image: new URL('@/assets/Food2.webp', import.meta.url).href },
   { id: 3, name: "รองเท้า", description: "รองเท้ากีฬาสำหรับออกกำลัง", image: new URL('@/assets/Food3.webp', import.meta.url).href },
-  { id: 4, name: "สมาร์ทโฟน", description: "โทรศัพท์มือถือรุ่นใหม่ล่าสุด", image: "/src/assets/phone.jpg" },
-  { id: 5, name: "แก้วน้ำ", description: "แก้วน้ำสแตนเลส", image: "/src/assets/cup.jpg" },
-  { id: 6, name: "หูฟังไร้สาย", description: "หูฟังคุณภาพเสียงดี", image: "/src/assets/headphones.jpg" },
-  { id: 7, name: "กระเป๋าเป้", description: "กระเป๋าเป้กันน้ำ", image: "/src/assets/bag.jpg" },
-  { id: 8, name: "เมาส์ไร้สาย", description: "เมาส์ไวเลสคุณภาพสูง", image: "/src/assets/mouse.jpg" }
+  { id: 4, name: "สมาร์ทโฟน", description: "โทรศัพท์มือถือรุ่นใหม่ล่าสุด", image: new URL('@/assets/electronic1.avif', import.meta.url).href },
+  { id: 5, name: "แก้วน้ำ", description: "แก้วน้ำสแตนเลส", image: new URL('@/assets/electronic2.jpeg', import.meta.url).href },
+  { id: 6, name: "หูฟังไร้สาย", description: "หูฟังคุณภาพเสียงดี", image: new URL('@/assets/itemgen1.jpg', import.meta.url).href },
+  { id: 7, name: "กระเป๋าเป้", description: "กระเป๋าเป้กันน้ำ", image: new URL('@/assets/itemgen2.jpg', import.meta.url).href },
+  { id: 8, name: "เมาส์ไร้สาย", description: "เมาส์ไวเลสคุณภาพสูง", image: new URL('@/assets/itemgen3.png', import.meta.url).href }
 ]);
 
 const toggleDropdown = () => {
