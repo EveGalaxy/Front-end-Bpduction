@@ -20,13 +20,13 @@
     </div>
     
     <div class="product-grid">
-      <div v-for="item in products" :key="item.id" class="card-bg">
+      <div v-for="item in filteredProducts" :key="item.id" class="card-bg">
         <figure>
           <img :src="item.image" />
         </figure>
         <div class="card-body">
           <h2 class="card-title">{{ item.name }}</h2>
-          <p>{{ item.description }}</p>
+          <p><strong>ประเภทสินค้า:</strong> {{ item.category }}</p>
           <div class="card-actions justify-end">
             <button class="btn btn-primary" @click="showDetails(item)">Details</button>
           </div>
@@ -279,7 +279,7 @@ button.backtosearch:hover {
 </style>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from 'vue-router';
 
 const isOpen = ref(false);
@@ -291,15 +291,22 @@ const router = useRouter();
 
 const categories = ref(["All", "อาหาร", "อุปกรณ์อิเล็กทรอนิกส์", "ของใช้ทั่วไป"]);
 const products = ref([
-  { id: 1, name: "พะแนงทูน่ากระป๋อง", description: "ข้าวมันไก่สูตรพิเศษ", image: new URL('@/assets/Food1.jpg', import.meta.url).href },
-  { id: 2, name: "มาม่ารสหมูสับ", description: "แล็ปท็อปสำหรับทำงาน", image: new URL('@/assets/Food2.webp', import.meta.url).href },
-  { id: 3, name: "อุด้งข้าวซอยไก่", description: "รองเท้ากีฬาสำหรับออกกำลัง", image: new URL('@/assets/Food3.webp', import.meta.url).href },
-  { id: 4, name: "ลำโพง", description: "โทรศัพท์มือถือรุ่นใหม่ล่าสุด", image: new URL('@/assets/electronic1.avif', import.meta.url).href },
-  { id: 5, name: "หูฟังแบบครอบหู", description: "แก้วน้ำสแตนเลส", image: new URL('@/assets/electronic2.jpeg', import.meta.url).href },
-  { id: 6, name: "กระเป๋าสตางค์", description: "หูฟังคุณภาพเสียงดี", image: new URL('@/assets/itemgen1.jpg', import.meta.url).href },
-  { id: 7, name: "ที่แต่งหน้า", description: "กระเป๋าเป้กันน้ำ", image: new URL('@/assets/itemgen2.jpg', import.meta.url).href },
-  { id: 8, name: "เครื่องคิดเลข", description: "เมาส์ไวเลสคุณภาพสูง", image: new URL('@/assets/itemgen3.png', import.meta.url).href }
+  { id: 1, name: "พะแนงทูน่ากระป๋อง", category: "อาหาร", image: new URL('@/assets/Food1.jpg', import.meta.url).href },
+  { id: 2, name: "มาม่ารสหมูสับ", category: "อาหาร", image: new URL('@/assets/Food2.webp', import.meta.url).href },
+  { id: 3, name: "อุด้งข้าวซอยไก่", category: "อาหาร", image: new URL('@/assets/Food3.webp', import.meta.url).href },
+  { id: 4, name: "ลำโพง", category: "อุปกรณ์อิเล็กทรอนิกส์", image: new URL('@/assets/electronic1.avif', import.meta.url).href },
+  { id: 5, name: "หูฟังแบบครอบหู", category: "อุปกรณ์อิเล็กทรอนิกส์", image: new URL('@/assets/electronic2.jpeg', import.meta.url).href },
+  { id: 6, name: "กระเป๋าสตางค์", category: "ของใช้ทั่วไป", image: new URL('@/assets/itemgen1.jpg', import.meta.url).href },
+  { id: 7, name: "ที่แต่งหน้า", category: "ของใช้ทั่วไป", image: new URL('@/assets/itemgen2.jpg', import.meta.url).href },
+  { id: 8, name: "เครื่องคิดเลข", category: "ของใช้ทั่วไป", image: new URL('@/assets/itemgen3.png', import.meta.url).href }
 ]);
+
+const filteredProducts = computed(() => {
+  if (!selectedCategory.value || selectedCategory.value === "All") {
+    return products.value;
+  }
+  return products.value.filter(item => item.category === selectedCategory.value);
+});
 
 const toggleDropdown = () => {
   isOpen.value = !isOpen.value;
