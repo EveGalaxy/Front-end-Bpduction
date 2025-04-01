@@ -1,6 +1,6 @@
 <template>
     <div class="SignupLeftView">
-        <img src="@/assets/SignUpImage.jpg" alt="Sign Up Image" class="signup-image">
+        <!-- <img src="@/assets/SignUpImage.jpg" alt="Sign Up Image" class="signup-image"> -->
         <div class="SignUptemplate">
             <h2 class="titleSignup">Sign Up</h2>
         </div>
