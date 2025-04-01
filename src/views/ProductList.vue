@@ -20,17 +20,32 @@
     </div>
     
     <div class="product-grid">
-      <div v-for="item in products" :key="item.id" class="card-bg">
+      <div v-for="item in filteredProducts" :key="item.id" class="card-bg">
         <figure>
           <img :src="item.image" />
         </figure>
         <div class="card-body">
           <h2 class="card-title">{{ item.name }}</h2>
-          <p>{{ item.description }}</p>
+          <p><strong>ประเภทสินค้า:</strong> {{ item.category }}</p>
           <div class="card-actions justify-end">
-            <button class="btn btn-primary">Details</button>
+            <button class="btn btn-primary" @click="showDetails(item)">Details</button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Modal for showing item details -->
+    <div v-if="isModalOpen" class="modal-overlay" @click="closeModal">
+      <div class="modal-content" @click.stop>
+        <h3>รายละเอียดสินค้า</h3>
+        <img :src="selectedItem.image" alt="Product Image" class="modal-image"/>
+        <p><strong>ชื่อสินค้า:</strong> {{ selectedItem.name }}</p>
+        <p><strong>รหัสสินค้า:</strong> {{ selectedItem.id }}</p>
+        <p><strong>ประเภทสินค้า:</strong> {{ selectedItem.category }}</p>
+        <p><strong>ประเภทอุปกรณ์ Beacon:</strong> {{ selectedItem.beaconType }}</p>
+        <p><strong>ตำแหน่งที่จัดเก็บสินค้า:</strong> {{ selectedItem.storageLocation }}</p>
+        <p><strong>จำนวนสินค้า:</strong> {{ selectedItem.quantity }}</p>
+        <button class="close-btn" @click="closeModal">ปิด</button>
       </div>
     </div>
   </div>
@@ -103,16 +118,17 @@
 
 button.backtosearch {
   padding: 10px 20px;
-  background-color: #006eb3;
-  color: white;
+  background-color: #ff5733;
+  color: rgb(0, 0, 0);
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: bold;
 }
 
 button.backtosearch:hover {
-  background-color: #64f0ff;
+  background-color: #c70039;
 }
 
 .product-grid {
@@ -191,28 +207,106 @@ button.backtosearch:hover {
 .card-actions .btn-primary:hover {
   background-color: #218838; /* สีเขียวอ่อนเมื่อโฮเวอร์ */
 }
+
+/* Existing styles... */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 600px; /* กำหนดให้เป็นสี่เหลี่ยมผืนผ้า */
+  height: auto; /* ให้สูงเท่ากับเนื้อหา */
+  text-align: left;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.modal-content h3 {
+  font-size: 24px;
+  margin-bottom: 10px;
+  text-align: center;
+  margin-left: 0px;
+}
+
+.modal-content p {
+  font-size: 18px;
+  margin: 5px 0;
+  line-height: 1.5;
+}
+
+.modal-image {
+  width: 300px; /* กำหนดขนาดรูปให้เท่ากัน */
+  height: 300px;
+  object-fit: cover; /* คงสัดส่วนของรูป */
+  display: block;
+  margin: 0 auto; /* จัดให้อยู่ตรงกลาง */
+  border-radius: 10px; /* เพิ่มความโค้งมน */
+}
+
+.modal-content .close-btn {
+  align-self: center; /* จัดปุ่มให้อยู่ตรงกลาง */
+  margin-top: 20px;
+}
+
+.close-btn {
+  background-color: #ff5733;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.close-btn:hover {
+  background-color: #c70039;
+}
 </style>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useRouter } from 'vue-router';
 
 const isOpen = ref(false);
 const selectedCategory = ref(null);
 const dropdownRef = ref(null);
+const isModalOpen = ref(false);
+const selectedItem = ref({});
 const router = useRouter();
 
 const categories = ref(["All", "อาหาร", "อุปกรณ์อิเล็กทรอนิกส์", "ของใช้ทั่วไป"]);
 const products = ref([
-  { id: 1, name: "ข้าวมันไก่", description: "ข้าวมันไก่สูตรพิเศษ", image: new URL('@/assets/Food1.jpg', import.meta.url).href },
-  { id: 2, name: "แล็ปท็อป", description: "แล็ปท็อปสำหรับทำงาน", image: new URL('@/assets/Food2.webp', import.meta.url).href },
-  { id: 3, name: "รองเท้า", description: "รองเท้ากีฬาสำหรับออกกำลัง", image: new URL('@/assets/Food3.webp', import.meta.url).href },
-  { id: 4, name: "สมาร์ทโฟน", description: "โทรศัพท์มือถือรุ่นใหม่ล่าสุด", image: new URL('@/assets/electronic1.avif', import.meta.url).href },
-  { id: 5, name: "แก้วน้ำ", description: "แก้วน้ำสแตนเลส", image: new URL('@/assets/electronic2.jpeg', import.meta.url).href },
-  { id: 6, name: "หูฟังไร้สาย", description: "หูฟังคุณภาพเสียงดี", image: new URL('@/assets/itemgen1.jpg', import.meta.url).href },
-  { id: 7, name: "กระเป๋าเป้", description: "กระเป๋าเป้กันน้ำ", image: new URL('@/assets/itemgen2.jpg', import.meta.url).href },
-  { id: 8, name: "เมาส์ไร้สาย", description: "เมาส์ไวเลสคุณภาพสูง", image: new URL('@/assets/itemgen3.png', import.meta.url).href }
+  { id: 1, name: "พะแนงทูน่ากระป๋อง", category: "อาหาร", image: new URL('@/assets/Food1.jpg', import.meta.url).href },
+  { id: 2, name: "มาม่ารสหมูสับ", category: "อาหาร", image: new URL('@/assets/Food2.webp', import.meta.url).href },
+  { id: 3, name: "อุด้งข้าวซอยไก่", category: "อาหาร", image: new URL('@/assets/Food3.webp', import.meta.url).href },
+  { id: 4, name: "ลำโพง", category: "อุปกรณ์อิเล็กทรอนิกส์", image: new URL('@/assets/electronic1.avif', import.meta.url).href },
+  { id: 5, name: "หูฟังแบบครอบหู", category: "อุปกรณ์อิเล็กทรอนิกส์", image: new URL('@/assets/electronic2.jpeg', import.meta.url).href },
+  { id: 6, name: "กระเป๋าสตางค์", category: "ของใช้ทั่วไป", image: new URL('@/assets/itemgen1.jpg', import.meta.url).href },
+  { id: 7, name: "ที่แต่งหน้า", category: "ของใช้ทั่วไป", image: new URL('@/assets/itemgen2.jpg', import.meta.url).href },
+  { id: 8, name: "เครื่องคิดเลข", category: "ของใช้ทั่วไป", image: new URL('@/assets/itemgen3.png', import.meta.url).href }
 ]);
+
+const filteredProducts = computed(() => {
+  if (!selectedCategory.value || selectedCategory.value === "All") {
+    return products.value;
+  }
+  return products.value.filter(item => item.category === selectedCategory.value);
+});
 
 const toggleDropdown = () => {
   isOpen.value = !isOpen.value;
@@ -227,6 +321,15 @@ const handleClickOutside = (event) => {
   if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
     isOpen.value = false;
   }
+};
+
+const showDetails = (item) => {
+  selectedItem.value = item;
+  isModalOpen.value = true;
+};
+
+const closeModal = () => {
+  isModalOpen.value = false;
 };
 
 const backtoprevious = () => {
