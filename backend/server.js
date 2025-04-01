@@ -109,6 +109,32 @@ app.post("/position", (req, res) => {
     });
 });
 
+// API สำหรับบันทึก beacons
+app.post("/api/beacons", (req, res) => {
+    const { name, address, major, minor } = req.body;
+
+    if (!name || !address) {
+        return res.status(400).json({ error: "ข้อมูลไม่ครบถ้วน" });
+    }
+
+    const sql = `
+        INSERT INTO beacon (name, address, major, minor) 
+        VALUES (?, ?, ?, ?)
+    `;
+    const values = [name, address, major, minor];
+
+    db.query(sql, values, (err, result) => {
+        if (err) {
+            console.error("❌ Error inserting data:", err);
+            return res.status(500).json({ error: "เกิดข้อผิดพลาด", details: err });
+        }
+        console.log("✅ บันทึก Beacon สำเร็จ:", result);
+        res.json({ success: true, message: "บันทึกข้อมูลสำเร็จ" });
+    });
+});
+
+
+
 
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
