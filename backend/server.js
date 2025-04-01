@@ -5,11 +5,16 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 
 const app = express();
-const port = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+
+const authRoutes = require('./routes/auth');
+
+app.use('/api/auth', authRoutes);
+app.use(express.json());
 
 // เชื่อมต่อ MySQL
 const db = mysql.createConnection({
@@ -27,7 +32,7 @@ db.connect(err => {
     }
 });
 
-// 📌 GET: ดึงข้อมูลสินค้า
+// GET: ดึงข้อมูลสินค้า
 app.get("/products", (req, res) => {
     db.query("SELECT * FROM Product", (err, results) => {
         if (err) {
@@ -38,7 +43,7 @@ app.get("/products", (req, res) => {
     });
 });
 
-// 📌 POST: เพิ่มสินค้าใหม่
+// POST: เพิ่มสินค้าใหม่
 app.post("/products", (req, res) => {
     const { name, category, description } = req.body;
     db.query(
@@ -54,7 +59,7 @@ app.post("/products", (req, res) => {
     );
 });
 
-// 📌 PUT: แก้ไขสินค้า
+// PUT: แก้ไขสินค้า
 app.put("/products/:id", (req, res) => {
     const { name, category, description } = req.body;
     const productID = req.params.id;
@@ -71,7 +76,7 @@ app.put("/products/:id", (req, res) => {
     );
 });
 
-// 📌 DELETE: ลบสินค้า
+// DELETE: ลบสินค้า
 app.delete("/products/:id", (req, res) => {
     const productID = req.params.id;
     db.query("DELETE FROM Product WHERE ProductID = ?", [productID], (err, result) => {
@@ -82,7 +87,6 @@ app.delete("/products/:id", (req, res) => {
         }
     });
 });
-
 
 
 // API สำหรับเพิ่มข้อมูล PositionRecord
@@ -106,7 +110,5 @@ app.post("/position", (req, res) => {
 });
 
 
-// เริ่มเซิร์ฟเวอร์
-app.listen(port, () => {
-    console.log(`🚀 Server running on http://localhost:${port}`);
-});
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+

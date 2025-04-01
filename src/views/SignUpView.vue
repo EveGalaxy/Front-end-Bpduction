@@ -22,11 +22,22 @@
                 <div class="input-group input-group-alternative">
                     <div class="input-group-prepend">
                         <span class="input-group-text">
-                            <i class="fa fa-envelope">
+                            <i class="fa fa-user">
                             </i>
                         </span>
                     </div>
-                    <input v-model="formData.email" placeholder="Email" type="email" class="form-control" fdprocessedid="j5d95">
+                    <input v-model="formData.firstname" placeholder="Firstname" type="text" class="form-control" fdprocessedid="kdzzh">
+                </div>
+            </div>
+            <div class="form-group mb-3">
+                <div class="input-group input-group-alternative">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">
+                            <i class="fa fa-user">
+                            </i>
+                        </span>
+                    </div>
+                    <input v-model="formData.lastname" placeholder="Lastname" type="text" class="form-control" fdprocessedid="kdzzh">
                 </div>
             </div>
             <div class="form-group">
@@ -66,6 +77,39 @@
         </form>
     </div>
 </template>
+
+<script>
+import axios from 'axios';
+export default{
+    data() {
+        return {
+            selectedOption: "",
+            options: [
+                { value: "user", label: "User" },
+                { value: "admin", label: "Admin" }
+            ],
+            formData: {
+                username: "",
+                firstname: "",
+                lastname: "",
+                password: ""
+            }
+        };
+    },
+    methods: {
+        async handleSignUp(){
+            try {
+                const res = await axios.post('http://localhost:5000/api/auth/register', this.formData);
+                alert(res.data.message);
+                this.$router.push('/login');
+            } catch (err) {
+                this.errorMessage = err.response.data.error;
+            }
+        }
+    }
+}
+</script>
+
 <style scoped>
 .border-0 {
     border: 0 !important;
@@ -328,33 +372,3 @@
 }
 </style>
 
-<script>
-export default{
-    data() {
-        return {
-            selectedOption: "",
-            options: [
-                { value: "user", label: "User" },
-                { value: "admin", label: "Admin" }
-            ],
-            formData: {
-                username: "",
-                email: "",
-                password: ""
-            }
-        };
-    },
-    methods: {
-        handleSignUp(){
-            if (!this.formData.username || !this.formData.email || !this.formData.password) {
-                alert("Please fill in all fields!");
-                return;
-            }
-            
-            console.log("User Data:", this.formData);
-            alert("User data saved successfully!");
-            this.$router.replace('/login');
-        }
-    }
-}
-</script>

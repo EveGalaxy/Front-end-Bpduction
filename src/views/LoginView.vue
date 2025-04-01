@@ -5,42 +5,57 @@
         <div class="Userlogin">
           <form @submit.prevent="handleLogin">
             <div class="form-group">
-              <label for="email">Username</label>
-              <input type="email" id="email" v-model="email" required />
+              <label for="username">Username</label>
+              <input type="text" id="username" v-model="username" required />
             </div>
-
             <div class="form-group">
               <label for="password">Password</label>
               <input type="password" id="password" v-model="password" required />
             </div>
-
             <button type="submit" class="login">Login</button>
-            <button type="submit" class="signup">Sign Up</button>
+            <p v-if="errorMessage">{{ errorMessage }}</p>
+            <RouterLink to="/sign-up">
+              <button type="submit" class="signup">Sign Up</button>
+            </RouterLink>
           </form>
         </div>
+        
     </div>
 </template>
 
 <script>
+import axios from 'axios';
 export default {
   data() {
     return {
         imageUrl: require('@/assets/duck-logo.webp'),
-        email: "",
+        username: "",
         password: "",
+        errorMessage: ''
     }
   },
   methods: {
-    handleLogin() {
-      if (this.email && this.password) {
-        console.log("Logging in with:", this.email, this.password);
-        // ส่งข้อมูลไปยัง API หรือดำเนินการตรวจสอบการเข้าสู่ระบบที่นี่
-      } else {
-        alert("กรุณากรอกอีเมลและรหัสผ่าน");
+    async handleLogin() {
+      console.log("🔍 Sending Data:", this.username, this.password); // Debug Frontend
+  
+      try {
+        const res = await axios.post('http://localhost:5000/api/auth/login', {
+          username: this.username,
+          password: this.password
+        });
+  
+        console.log("✅ Response from server:", res); // Debug API Response
+        localStorage.setItem('token', res.data.token);
+        alert("Login Successful!");
+
+        this.$router.push('/main');
+      } catch (err) {
+        console.error("❌ Error response:", err.response); // Debug Error Response
+        this.errorMessage = err.response?.data?.error || "An unexpected error occurred";
       }
-    },
-  },
-}
+    }
+  }
+};
 </script>
 
 <style>
@@ -90,7 +105,7 @@ body{
 }
 
 
-#email {
+#username {
   width: 50%;
   padding: 8px;
   border: 1px solid #ccc;
