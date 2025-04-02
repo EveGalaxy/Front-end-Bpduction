@@ -44,19 +44,26 @@ app.get("/products", (req, res) => {
 });
 
 // POST: เพิ่มสินค้าใหม่
-app.post("/products", (req, res) => {
-    const { name, category, description } = req.body;
-    db.query(
-        "INSERT INTO Product (Name, Category, Description, CreatedAt) VALUES (?, ?, ?, NOW())",
-        [name, category, description],
-        (err, result) => {
-            if (err) {
-                res.status(500).send(err);
-            } else {
-                res.json({ message: "✅ สินค้าถูกเพิ่มเรียบร้อย", productID: result.insertId });
-            }
-        }
-    );
+app.post('/products', (req, res) => {
+    const { Name, Category, Description, BeaconId } = req.body;
+  
+    if (!Name || !Category || !BeaconId) {
+      return res.status(400).json({ error: 'ข้อมูลไม่ครบ' });
+    }
+  
+    const insertProduct = 'INSERT INTO Product (Name, Category, Description) VALUES (?, ?, ?)';
+    db.query(insertProduct, [Name, Category, Description], (err, result) => {
+      if (err) return res.status(500).json({ error: 'บันทึกสินค้าไม่สำเร็จ' });
+  
+      const productId = result.insertId;
+  
+      const insertRelation = 'INSERT INTO product_beacon (productId, beaconId) VALUES (?, ?)';
+      db.query(insertRelation, [productId, BeaconId], (err2, result2) => {
+        if (err2) return res.status(500).json({ error: 'บันทึกข้อมูล beacon ไม่สำเร็จ' });
+  
+        res.json({ success: true, productId, beaconRelationId: result2.insertId });
+      });
+    });
 });
 
 // PUT: แก้ไขสินค้า
@@ -133,8 +140,124 @@ app.post("/api/beacons", (req, res) => {
     });
 });
 
+// update-rssi-product-beacon
+app.post('/update-rssi-one', (req, res) => {
+    const { productId, beaconId, rssi, laptopIndex } = req.body;
+  
+    // ป้องกัน index ผิดพลาด
+    if (![1, 2, 3, 4].includes(laptopIndex)) {
+      return res.status(400).json({ error: 'laptopIndex ต้องเป็น 1-4 เท่านั้น' })
+    }
+  
+    // สร้างชื่อ field แบบ dynamic เช่น rssi_1
+    const field = `rssi_${laptopIndex}`
+    const sql = `UPDATE product_beacon SET ${field} = ? WHERE productId = ? AND beaconId = ?`
+  
+    db.query(sql, [rssi, productId, beaconId], (err, result) => {
+      if (err) {
+        console.error('❌ UPDATE ERROR:', err)
+        return res.status(500).json({ error: 'เกิดข้อผิดพลาดในการอัปเดต RSSI' })
+      }
+      res.json({ success: true, affectedRows: result.affectedRows })
+    })
+});
 
-
+function calcEuclidean(a, b) {
+    let sum = 0
+    for (let i = 0; i < a.length; i++) {
+      sum += Math.pow((a[i] - b[i]), 2)
+    }
+    return Math.sqrt(sum)
+  }
+  
+  app.get('/predict-slot/:productId', (req, res) => {
+    const productId = req.params.productId
+  
+    const getRSSI = `SELECT * FROM product_beacon WHERE productId = ?`
+    db.query(getRSSI, [productId], (err, rows) => {
+      if (err || rows.length === 0) return res.status(404).json({ error: 'ไม่พบสินค้า' })
+  
+      const beacon = rows[0]
+      const currentRSSI = [beacon.rssi_1, beacon.rssi_2, beacon.rssi_3, beacon.rssi_4]
+  
+      if (currentRSSI.some(val => val === null)) {
+        return res.status(400).json({ error: 'ค่า RSSI ของสินค้ายังไม่ครบ' })
+      }
+  
+      const query = `
+        SELECT slot, 
+          AVG(rssi_1) as avg_rssi_1,
+          AVG(rssi_2) as avg_rssi_2,
+          AVG(rssi_3) as avg_rssi_3,
+          AVG(rssi_4) as avg_rssi_4
+        FROM positionrecord
+        GROUP BY slot
+      `
+  
+      db.query(query, (err2, results) => {
+        if (err2) return res.status(500).json({ error: 'ดึงตำแหน่งล้มเหลว' })
+  
+        let closestSlot = null
+        let minDistance = Infinity
+  
+        results.forEach(slotRow => {
+          const slotRSSI = [
+            slotRow.avg_rssi_1,
+            slotRow.avg_rssi_2,
+            slotRow.avg_rssi_3,
+            slotRow.avg_rssi_4
+          ]
+  
+          if (slotRSSI.some(val => val === null)) return
+  
+          const distance = calcEuclidean(currentRSSI, slotRSSI)
+          if (distance < minDistance) {
+            minDistance = distance
+            closestSlot = slotRow.slot
+          }
+        })
+  
+        if (closestSlot === null) {
+          return res.json({
+            predictedSlot: null,
+            distance: null,
+            error: "ไม่สามารถเปรียบเทียบได้ (ไม่มี slot ที่ใช้ได้)"
+          })
+        }
+  
+        res.json({
+          predictedSlot: closestSlot,
+          distance: minDistance
+        })
+      })
+    })
+  });
+  
+  app.get('/product-list-full', (req, res) => {
+    const sql = `
+      SELECT 
+        p.ProductID,
+        p.Name,
+        p.Category,
+        p.Description,
+        b.BeaconName,
+        sl.LocationCode
+      FROM Product p
+      LEFT JOIN product_beacon pb ON p.ProductID = pb.productId
+      LEFT JOIN beacon b ON pb.beaconId = b.beaconId
+      LEFT JOIN product_location pl ON p.ProductID = pl.ProductID
+      LEFT JOIN SlotLocation sl ON pl.Slot = sl.Slot;
+    `
+    db.query(sql, (err, results) => {
+      if (err) {
+        console.error('❌ SQL ERROR:', err)
+        return res.status(500).json({ error: err.sqlMessage || 'ดึงข้อมูลไม่สำเร็จ' })
+      }
+      res.json(results)
+    })
+  })
+  
+  
 
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 
