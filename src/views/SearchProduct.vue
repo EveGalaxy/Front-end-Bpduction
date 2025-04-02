@@ -1,33 +1,52 @@
 <template>
-    <div class="SearchProduct">
-        <h2 class="titleSearch">Search Product</h2>
-        <div class="main-search-input">
-          <div class="main-search-input-item">
-            <input type="text" placeholder="What are you looking for?" value="" fdprocessedid="ea6hnv" style="padding-right: 0px;">
-          </div>
-          <div class="main-search-input-item-location">
-            <div id="autocomplete-container">
-              <input id="autocomplete-input" type="text" placeholder="Beacon Type" fdprocessedid="xffmj">
+  <div class="SearchProduct">
+      <h2 class="titleSearch">Search Product</h2>
+      <div class="main-search-input">
+        <div class="main-search-input-item input-item-text">
+          <input 
+            type="text" 
+            v-model="searchQuery" 
+            placeholder="ต้องการค้นหาสินค้าอะไร" 
+          />
+        </div>
+        <div class="main-search-input-item input-item-select">
+          <select v-model="selectedBeacon" class="custom-select">
+            <option value="">Beacon Type</option>
+            <option value="IBKS 105 No 1">IBKS 105 No 1</option>
+            <option value="IBKS 105 No 2">IBKS 105 No 2</option>
+            <option value="IBKS 105 No 3">IBKS 105 No 3</option>
+            <option value="IBKS 105 No 4">IBKS 105 No 4</option>
+            <option value="IBKS 105 No 5">IBKS 105 No 5</option>
+            <option value="IBKS 105 No 6">IBKS 105 No 6</option>
+          </select>
+        </div>
+        <div class="main-search-input-item input-item-select">
+          <select v-model="selectedCategory" class="chosen-select custom-select">
+            <option value="">All Categories</option>
+            <option value="อาหาร">อาหาร</option>
+            <option value="อุปกรณ์อิเล็กทรอนิกส์">อุปกรณ์อิเล็กทรอนิกส์</option>
+            <option value="ของใช้ทั่วไป">ของใช้ทั่วไป</option>
+          </select>
+        </div>
+        <a href="#" class="btn main-search-btn" @click="filterProducts">Search</a>
+      </div>
+      
+      <div class="shelf-container">
+        <div v-for="(row, rowIndex) in shelfRows" :key="rowIndex" class="shelf-row">
+          <div class="card-container">
+            <div v-for="(shelf, index) in row" :key="index" class="card" @click="clickCard(shelf)">
+              <h3 class="card-title">{{ shelf.title }}</h3>
+              <p>{{ shelf.description }}</p>
             </div>
           </div>
-          <div class="main-search-input-item">
-            <select data-placeholder="All Categories" class="chosen-select custom-select" fdprocessedid="d8kc">
-              <option>All Categories</option>
-              <option>อาหาร</option>
-              <option>อุปกรณ์อิเล็กทรอนิกส์</option>
-              <option>ของใช้ทั่วไป</option>
-            </select>
-          </div>
-          <a href="#" class="btn main-search-btn btn-radius btn-lg btn-white">
-            <span class="btn-inner--text no-underline">Search</span>
-          </a>
-          </div>
-        </div><br>
-    <img :src="imageUrl" alt="product in shelves" class="shelves"><br>
-    <div class="btnunder">
-        <button class="productlist" @click="gotoProductList()">แสดงรายการสินค้า</button> 
-        <button class="logout" @click="logoutSystem()">Log Out</button> 
-    </div>
+        </div>
+      </div>
+      
+      <div class="btnunder">
+        <button class="productlist main-search-btn" @click="gotoProductList">แสดงรายการสินค้า</button> 
+        <button class="logout main-search-btn" @click="logoutSystem">Log Out</button> 
+      </div>
+  </div>
 </template>
 
 <style>
@@ -44,40 +63,48 @@
   margin-left: auto; /* ขยับไปทางขวามือ */
   margin-right: 180px; /* เพิ่มระยะห่างจากด้านขวา */
   margin-top: -90px;
-  gap: 10px;
+  gap: 1px;
 }
-.main-search-input-item{
+
+.main-search-input-item {
   flex: 1; /* ทำให้ขยายเต็มที่ */
   margin-top: 3px;
   position: relative;
   padding: 5px 8px;
   padding-left: 30px;
   padding-right: 30px;
-  -webkit-box-flex: 1;
 }
 
-.main-search-input-item input,
-.main-search-input-item-location input,
-.main-search-input-item select {
-    width: 100%;
-    padding: 10px;
-    font-size: 14px;
-    border-radius: 8px;
-    border: 2px solid #ccc;
-    outline: none;
-    background-color: white;
+.input-item-text input {
+  width: 100%;
+  padding: 10px;
+  padding-right: 140px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 2px solid #ccc;
+  outline: none;
+  background-color: white;
+  color: #555;
+  /* เพิ่มขนาดขยายไปทางขวา */
+  flex-grow: 2;
+}
+
+.input-item-select select {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 2px solid #ccc;
+  outline: none;
+  background-color: white;
+  color: #555;
+  /* ขยายขนาด select เล็กน้อย */
+  flex-grow: 2;
 }
 
 .main-search-input-item input::placeholder,
 .main-search-input-item select {
-    color: #555;
-}
-
-.main-search-input-item-location{
-  margin-top: 3px;
-  margin-right: -100px;
-  flex: 1;
-  padding: 5px 10px;
+  color: #555;
 }
 
 .main-search-btn {
@@ -95,114 +122,149 @@
   align-items: center;
   justify-content: center;
   text-decoration: none;
-  margin-left: 100px;
+  margin-left: 40px;
 }
+
 .main-search-btn:hover {
-    background-color: #c70039;
-    transform: translateY(-2px);
-}
-.main-search-btn .btn-inner--text {
-    text-decoration: none;
+  background-color: #c70039;
+  transform: translateY(-2px);
 }
 
 @media (max-width: 768px) {
-    .main-search-input {
-        flex-direction: column; /* เปลี่ยนเป็นแนวตั้งเมื่อจอเล็ก */
-        align-items: stretch;
-        width: 90%;
-        margin-right: auto;
-        border-radius: 20px;
-    }
+  .main-search-input {
+    flex-direction: column; /* เปลี่ยนเป็นแนวตั้งเมื่อจอเล็ก */
+    align-items: stretch;
+    width: 90%;
+    margin-right: auto;
+    border-radius: 20px;
+  }
 
-    .main-search-input-item,
-    .main-search-input-item-location {
-        width: 100%;
-        padding: 5px 0;
-    }
+  .main-search-input-item {
+    width: 100%;
+    padding: 5px 0;
+  }
 
-    .main-search-btn {
-        width: 100%;
-        text-align: center;
-    }
+  .main-search-btn {
+    width: 100%;
+    text-align: center;
+  }
 }
 
-.SearchProduct{
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin-left: 50px;
-    margin-top: 50px;
-    padding: 2px;
-    position: flex;
+.chosen-select{
+  margin-left: 50px;
 }
-.shelves{
-  width: 1300px;
-  height: 400px;
-  margin-top: 0px;
+
+.SearchProduct {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-left: 50px;
+  margin-top: 50px;
+  padding: 2px;
+  position: flex;
+}
+
+.shelf-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 60%;
+  margin: 0 auto;
+  padding: 20px;
+  background: #8B5A2B; /* สีน้ำตาลเข้มของไม้แข็ง */
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.shelf-row {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  padding: 10px 0;
+  background: gray;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+.card {
+  background: white;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.2s;
+  text-align: center;
+  width: 150px;
+}
+
+.card:hover {
+  transform: scale(1.05);
+}
+
+.card-title {
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 5px;
   margin-left: 0px;
-  border-radius: 10%;
-  border: 4px solid black;
-}
-.titleSearch{
-    color: navy;
-    font-size: 2rem;
-}
-.btn-lg {
-    font-size: .875rem;
-    line-height: 1.5;
-    padding: .875rem 1rem;
-}
-.btn-radius {
-    border-radius: 25px;
-    padding-left: 2rem;
-    padding-right: 2rem;
-}
-.btn {
-    position: relative;
-    text-transform: uppercase;
-    -webkit-transition: all .15s ease;
-    transition: all .15s ease;
-    will-change: transform;
-    letter-spacing: .025em;
-    font-size: .875rem;
-}
-.btn:hover {
-    box-shadow: 0 7px 14px rgba(50, 50, 93, .1), 0 3px 6px rgba(0, 0, 0, .08);
-    -webkit-transform: translateY(-1px);
-    transform: translateY(-1px);
 }
 
-.btn-white, .btn-white:hover {
-    color: #212529;
-    background-color: #fff;
-    border-color: #fff;
-    box-shadow: 0 4px 6px rgba(50, 50, 93, .11), 0 1px 3px rgba(0, 0, 0, .08);
+.titleSearch {
+  color: navy;
+  font-size: 2rem;
 }
+
+.btnunder {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  margin-left: 500px;
+  gap: 20px;
+}
+
 button.productlist {
-    background-color: #4bf9ff;
-    border: 2px solid  #000000;
-    color: rgb(0, 0, 0);
-    padding: 0.75em 1.5em;
-    margin: 0 .5em;
-    cursor: pointer;
-    margin-top: 20px;
-    margin-bottom: 50px;
-    margin-right: 50px;
-    padding-left: 50px;
-    padding-right: 50px;
+  background-color: #4bf9ff;
+  border: 2px solid #000000;
+  border-radius: 25px;
+  color: rgb(0, 0, 0);
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px 20px;
+  margin: 0 .5em;
+  cursor: pointer;
+  margin-top: 20px;
+  margin-bottom: 50px;
+  padding-left: 50px;
+  padding-right: 50px;
+  text-align: center;
+  transition: background-color 0.3s ease-in-out, transform 0.2s;
 }
+
 button.logout {
-    background-color: #ff4848;
-    border: 2px solid  #000000;
-    color: rgb(0, 0, 0);
-    padding: 0.75em 1.5em;
-    margin: 0 .5em;
-    cursor: pointer;
-    margin-top: 20px;
-    margin-bottom: 50px;
-    margin-right: 50px;
-    padding-left: 50px;
-    padding-right: 50px;
+  background-color: #ff4848;
+  border: 2px solid #000000;
+  border-radius: 25px;
+  color: rgb(0, 0, 0);
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px 20px;
+  margin: 0 .5em;
+  cursor: pointer;
+  margin-top: 20px;
+  margin-bottom: 50px;
+  padding-left: 50px;
+  padding-right: 50px;
+  text-align: center;
+  transition: background-color 0.3s ease-in-out, transform 0.2s;
 }
 </style>
 
@@ -210,16 +272,52 @@ button.logout {
 export default {
   data() {
     return {
-        imageUrl: require('@/assets/shelves1.jpg'),
+      searchQuery: '',  // Store the search query
+      selectedBeacon: '', // Store selected Beacon type
+      selectedCategory: '', // Store selected category
+      shelves: [
+        { title: 'Shelf 1', description: 'Electronics', category: 'อุปกรณ์อิเล็กทรอนิกส์', beacon: 'IBKS 105 No 1' },
+        { title: 'Shelf 2', description: 'Groceries', category: 'อาหาร', beacon: 'IBKS 105 No 2' },
+        { title: 'Shelf 3', description: 'Household Items', category: 'ของใช้ทั่วไป', beacon: 'IBKS 105 No 3' },
+        { title: 'Shelf 4', description: 'Clothing', category: 'ของใช้ทั่วไป', beacon: 'IBKS 105 No 4' },
+        { title: 'Shelf 5', description: 'Accessories', category: 'ของใช้ทั่วไป', beacon: 'IBKS 105 No 5' },
+        { title: 'Shelf 6', description: 'Sports', category: 'อุปกรณ์อิเล็กทรอนิกส์', beacon: 'IBKS 105 No 6' },
+      ]
+    };
+  },
+  computed: {
+    // Filter shelves based on the searchQuery, selectedBeacon, and selectedCategory
+    filteredShelves() {
+      return this.shelves.filter(shelf => {
+        const matchesSearch = shelf.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                              shelf.description.toLowerCase().includes(this.searchQuery.toLowerCase());
+        const matchesBeacon = this.selectedBeacon ? shelf.beacon === this.selectedBeacon : true;
+        const matchesCategory = this.selectedCategory ? shelf.category === this.selectedCategory : true;
+        return matchesSearch && matchesBeacon && matchesCategory;
+      });
+    },
+    // Split the filtered shelves into rows for display
+    shelfRows() {
+      return [
+        this.filteredShelves.slice(0, 3),
+        this.filteredShelves.slice(3, 6)
+      ];
     }
   },
   methods: {
-    gotoProductList(){
+    gotoProductList() {
       this.$router.replace('/product-list');
     },
     logoutSystem() {
       this.$router.replace('/login');
     },
+    clickCard(shelf) {
+      alert(`คุณเลือก ${shelf.title}: ${shelf.description}`);
+    },
+    filterProducts() {
+      // This method can be used to manually trigger the filtering (if you want)
+      // The filters are already automatically applied in the computed property
+    }
   }
 }
 </script>
