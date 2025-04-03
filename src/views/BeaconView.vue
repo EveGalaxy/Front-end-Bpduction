@@ -1,41 +1,102 @@
 <template>
-  <div class="home">
-    <div class="Beacon">
-      <h2>{{ title }}</h2>
-      <div class="items">
-        <form @submit.prevent="submitForm">
-          <ul style="margin-left: 140px;">
-            <label for="beacon" style="margin-right: 60px;">Beacon Name :</label>
-            <select v-model="form.beaconName" id="beacon" required @change="handleChangeBeacon">
-              <option value="" disabled selected>เลือก Beacon</option>
-              <option v-for="beacon in beacons" :key="beacon.address" :value="beacon.name">
-                {{ beacon.name }}
-              </option>
-            </select>
-          </ul>
-          <ul style="margin-left: 140px;">
-            <label for="address" style="margin-right: 60px;">Address :</label>
-            <input type="text" id="beacon-address" v-model="form.address" readonly>
-          </ul>
-          <ul style="margin-left: 140px;">
-            <label for="major" style="margin-right: 78px;">Major :</label>
-            <input type="text" id="beacon-major" v-model="form.major" readonly>
-          </ul>
-          <ul style="margin-left: 140px;">
-            <label for="minor" style="margin-right: 78px;">Minor :</label>
-            <input type="text" id="beacon-minor" v-model="form.minor" readonly>
-          </ul>
-          <br><br>
-          <div class="btn">
-            <button type="submit" class="save" >SAVE</button> 
-            <button class="cancel" @click="clearForm()">CANCEL</button>
-          </div>
-        </form>
-        <p v-if="message" class="message">{{ message }}</p>
-      </div>
+  <div class="min-h-screen bg-gradient-to-br from-blue-100 to-blue-300 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-2xl p-8 animate-fade-in">
+      <h2 class="text-2xl font-bold text-blue-700 mb-6 text-center">{{ title }}</h2>
+
+      <form @submit.prevent="submitForm" class="space-y-6">
+        <!-- Beacon Name -->
+        <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+          <label for="beacon" class="w-40 font-medium text-gray-700">🛰️ Beacon Name:</label>
+          <select
+            v-model="form.beaconName"
+            id="beacon"
+            @change="handleChangeBeacon"
+            required
+            class="w-full md:w-2/3 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400"
+          >
+            <option value="" disabled selected>เลือก Beacon</option>
+            <option v-for="beacon in beacons" :key="beacon.address" :value="beacon.name">
+              {{ beacon.name }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Address -->
+        <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+          <label for="address" class="w-40 font-medium text-gray-700">📍 Address:</label>
+          <input
+            type="text"
+            id="beacon-address"
+            v-model="form.address"
+            readonly
+            class="w-full md:w-2/3 px-4 py-2 bg-gray-100 text-gray-700 border border-gray-300 rounded-lg"
+          />
+        </div>
+
+        <!-- Major -->
+        <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+          <label for="major" class="w-40 font-medium text-gray-700">🔢 Major:</label>
+          <input
+            type="text"
+            id="beacon-major"
+            v-model="form.major"
+            readonly
+            class="w-full md:w-2/3 px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg"
+          />
+        </div>
+
+        <!-- Minor -->
+        <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+          <label for="minor" class="w-40 font-medium text-gray-700">🔢 Minor:</label>
+          <input
+            type="text"
+            id="beacon-minor"
+            v-model="form.minor"
+            readonly
+            class="w-full md:w-2/3 px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg"
+          />
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-end gap-4 pt-4">
+          <button
+            type="submit"
+            class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-all"
+          >
+            💾 SAVE
+          </button>
+          <button
+            type="button"
+            @click="clearForm()"
+            class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium px-6 py-2 rounded-lg transition-all"
+          >
+            ❌ CANCEL
+          </button>
+        </div>
+
+        <p v-if="message" class="text-center text-green-600 font-semibold mt-4">{{ message }}</p>
+      </form>
     </div>
   </div>
 </template>
+
+<style>
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+</style>
+
+
 
 <script>
 import axios from "axios";
@@ -140,22 +201,3 @@ export default {
 };
 </script>
 
-<style>
-body {
-  background-color: #f8ff7c;
-}
-.home {
-  background-color: #ffe7aa;
-  box-shadow: 0 8px 8px rgba(0, 0, 0, 0.2);
-  border: 3px solid black;
-  border-radius: 30px;
-  padding-left: 500px;
-  padding-bottom: 50px;
-  position: fixed;
-  margin-top: 110px;
-  margin-bottom: 15px;
-  margin-left: 40px;
-  margin-right: 40px;
-  width: 950px;
-}
-</style>

@@ -85,7 +85,7 @@ app.put("/products/:id", (req, res) => {
 });
 
 // DELETE: ลบสินค้า
-app.delete("/products/:id", (req, res) => {
+app.delete("/api/products/:id", (req, res) => {
     const productID = req.params.id;
     db.query("DELETE FROM Product WHERE ProductID = ?", [productID], (err, result) => {
         if (err) {
@@ -140,6 +140,7 @@ app.post("/api/beacons", (req, res) => {
         res.json({ success: true, message: "บันทึกข้อมูลสำเร็จ" });
     });
 });
+
 
 // update-rssi-product-beacon
 app.post('/update-rssi-current', (req, res) => {
