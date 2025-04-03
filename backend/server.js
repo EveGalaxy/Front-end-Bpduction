@@ -162,26 +162,18 @@ app.post('/update-rssi-one', (req, res) => {
     })
 });
 
-function calcEuclidean(a, b) {
-    let sum = 0
-    for (let i = 0; i < a.length; i++) {
-      sum += Math.pow((a[i] - b[i]), 2)
-    }
-    return Math.sqrt(sum)
-  }
+  app.post('/predict-slot/:productId', async (req, res) => {
+    const productId = req.params.productId;
   
-  app.get('/predict-slot/:productId', (req, res) => {
-    const productId = req.params.productId
-  
-    const getRSSI = `SELECT * FROM product_beacon WHERE productId = ?`
+    // คำนวณตำแหน่งเหมือน GET แต่เพิ่มการบันทึก
+    const getRSSI = `SELECT * FROM product_beacon WHERE productId = ?`;
     db.query(getRSSI, [productId], (err, rows) => {
-      if (err || rows.length === 0) return res.status(404).json({ error: 'ไม่พบสินค้า' })
+      if (err || rows.length === 0) return res.status(404).json({ error: 'ไม่พบสินค้า' });
   
-      const beacon = rows[0]
-      const currentRSSI = [beacon.rssi_1, beacon.rssi_2, beacon.rssi_3, beacon.rssi_4]
-  
-      if (currentRSSI.some(val => val === null)) {
-        return res.status(400).json({ error: 'ค่า RSSI ของสินค้ายังไม่ครบ' })
+      const beacon = rows[0];
+      const currentRSSI = [beacon.RSSI_1, beacon.RSSI_2, beacon.RSSI_3, beacon.RSSI_4];
+      if (currentRSSI.some(val => val === null || typeof val !== 'number')) {
+        return res.status(400).json({ error: 'ค่า RSSI ของสินค้ายังไม่ครบหรือไม่ถูกต้อง' });
       }
   
       const query = `
@@ -190,15 +182,14 @@ function calcEuclidean(a, b) {
           AVG(rssi_2) as avg_rssi_2,
           AVG(rssi_3) as avg_rssi_3,
           AVG(rssi_4) as avg_rssi_4
-        FROM positionrecord
-        GROUP BY slot
-      `
+        FROM positionrecord GROUP BY slot
+      `;
   
       db.query(query, (err2, results) => {
-        if (err2) return res.status(500).json({ error: 'ดึงตำแหน่งล้มเหลว' })
+        if (err2) return res.status(500).json({ error: 'ดึงตำแหน่งล้มเหลว' });
   
-        let closestSlot = null
-        let minDistance = Infinity
+        let closestSlot = null;
+        let minDistance = Infinity;
   
         results.forEach(slotRow => {
           const slotRSSI = [
@@ -206,32 +197,34 @@ function calcEuclidean(a, b) {
             slotRow.avg_rssi_2,
             slotRow.avg_rssi_3,
             slotRow.avg_rssi_4
-          ]
+          ];
+          if (slotRSSI.some(val => val === null)) return;
   
-          if (slotRSSI.some(val => val === null)) return
+          const distance = Math.sqrt(slotRSSI.reduce((sum, avg, i) => {
+            return sum + Math.pow(currentRSSI[i] - avg, 2);
+          }, 0));
   
-          const distance = calcEuclidean(currentRSSI, slotRSSI)
           if (distance < minDistance) {
-            minDistance = distance
-            closestSlot = slotRow.slot
+            minDistance = distance;
+            closestSlot = slotRow.slot;
           }
-        })
+        });
   
-        if (closestSlot === null) {
-          return res.json({
-            predictedSlot: null,
-            distance: null,
-            error: "ไม่สามารถเปรียบเทียบได้ (ไม่มี slot ที่ใช้ได้)"
-          })
+        if (closestSlot !== null) {
+          db.query(
+            `REPLACE INTO product_location (ProductID, Slot, DetectedAt) VALUES (?, ?, NOW())`,
+            [productId, closestSlot],
+            () => {
+              res.json({ predictedSlot: closestSlot, distance: minDistance });
+            }
+          );
+        } else {
+          res.json({ predictedSlot: null, distance: null, error: "ไม่สามารถเปรียบเทียบได้" });
         }
-  
-        res.json({
-          predictedSlot: closestSlot,
-          distance: minDistance
-        })
-      })
-    })
+      });
+    });
   });
+  
   
   app.get('/product-list-full', (req, res) => {
     const sql = `
@@ -246,16 +239,27 @@ function calcEuclidean(a, b) {
       LEFT JOIN product_beacon pb ON p.ProductID = pb.productId
       LEFT JOIN beacon b ON pb.beaconId = b.beaconId
       LEFT JOIN product_location pl ON p.ProductID = pl.ProductID
-      LEFT JOIN SlotLocation sl ON pl.Slot = sl.Slot;
+      LEFT JOIN SlotLocation sl ON pl.Slot = sl.Slot
     `
     db.query(sql, (err, results) => {
       if (err) {
         console.error('❌ SQL ERROR:', err)
-        return res.status(500).json({ error: err.sqlMessage || 'ดึงข้อมูลไม่สำเร็จ' })
+        return res.status(500).json({ error: 'ไม่สามารถดึงข้อมูลสินค้าได้'})
+      }
+      res.json(results)
+    })
+  }),
+
+  app.get('/slot-location-list', (req, res) => {
+    db.query('SELECT LocationCode FROM SlotLocation', (err, results) => {
+      if (err) {
+        console.error(err)
+        return res.status(500).json({ error: 'ไม่สามารถดึง LocationCode ได้' })
       }
       res.json(results)
     })
   })
+  
   
   
 

@@ -18,15 +18,18 @@ async def scan_beacons_async():
 
     for device in devices:
         manufacturer_data = device.metadata.get("manufacturer_data", {})
-        major = manufacturer_data.get(76, [0, 0])[0]  # อาจต้องแก้ให้ตรงกับอุปกรณ์จริง
-        minor = manufacturer_data.get(76, [0, 0])[1]
+        if 76 in manufacturer_data:
+            raw_data = manufacturer_data[76]
+            if len(raw_data) >= 23:
+                major = int.from_bytes(raw_data[18:20], byteorder="big")  # อาจต้องแก้ให้ตรงกับอุปกรณ์จริง
+                minor = int.from_bytes(raw_data[20:22], byteorder="big")
 
-        beacons.append({
-            "name": device.name or "Unknown",
-            "address": device.address,
-            "major": major,
-            "minor": minor
-        })
+                beacons.append({
+                    "name": device.name or "Unknown",
+                    "address": device.address,
+                    "major": major,
+                    "minor": minor
+                })
 
     return beacons
 
