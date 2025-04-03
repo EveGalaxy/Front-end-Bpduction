@@ -33,7 +33,7 @@ def scan():
         'name': name,
         'address': address,
         'rssi_1': rssi_values[0],
-        'rssi_2': rssi_values[1],
+        'rssi_2': rssi_values[1] -2,
         'rssi_3': None,
         'rssi_4': None
     })

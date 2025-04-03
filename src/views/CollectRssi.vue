@@ -34,12 +34,12 @@
           </div>
           <br><br>
           <div class="btn">
-            <button class="scan" @click="scanRSSI">🔍SCAN</button> 
             <button type="submit" class="save" >SAVE</button>
-            
           </div>
         </form>
-        <p v-if="message" class="message">{{ message }}</p>
+        <button class="scan" @click="scanRSSI">🔍SCAN</button> 
+        <p v-if="success" class="text-green-600 mt-4">✅ บันทึกสำเร็จ</p>
+        <p v-if="error" class="text-red-600 mt-4">{{ error }}</p>
       </div>
     </div>
   </div>
@@ -81,6 +81,7 @@ const scanRSSI = async () => {
     form.value.rssi_2 = result.rssi_2
     form.value.rssi_3 = result.rssi_3
     form.value.rssi_4 = result.rssi_4
+
   } catch (err) {
     console.error("❌ Error while scanning RSSI:", err)
   }
@@ -91,19 +92,34 @@ const submitRSSI = async () => {
   success.value = false
   error.value = ''
 
-  const res = await fetch('http://localhost:5000/collect-rssi', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(form.value)
-  })
+  const payload = {
+    slot: form.value.slot,
+    collect: form.value.collect,
+    rssi_1: form.value.rssi_1,
+    rssi_2: form.value.rssi_2
+  }
 
-  const result = await res.json()
-  if (res.ok) {
-    success.value = true
-  } else {
-    error.value = result.error || 'เกิดข้อผิดพลาดในการบันทึก'
+  try {
+    const res = await fetch('http://localhost:5000/collect-rssi', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+
+    const result = await res.json()
+
+    if (res.ok) {
+      success.value = true
+    } else {
+      error.value = result.error || 'เกิดข้อผิดพลาดในการบันทึก'
+    }
+  } catch (err) {
+    console.error('❌ Network Error:', err)
+    error.value = 'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'
   }
 }
+
+
 
 </script>
 

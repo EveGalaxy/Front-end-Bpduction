@@ -142,7 +142,7 @@ app.post("/api/beacons", (req, res) => {
 });
 
 // update-rssi-product-beacon
-app.post('/update-rssi-one', (req, res) => {
+app.post('/update-rssi-current', (req, res) => {
     const { productId, beaconId, rssi, laptopIndex } = req.body;
   
     // ป้องกัน index ผิดพลาด
@@ -163,68 +163,94 @@ app.post('/update-rssi-one', (req, res) => {
     })
 });
 
-  app.post('/predict-slot/:productId', async (req, res) => {
-    const productId = req.params.productId;
-  
-    // คำนวณตำแหน่งเหมือน GET แต่เพิ่มการบันทึก
-    const getRSSI = `SELECT * FROM product_beacon WHERE productId = ?`;
-    db.query(getRSSI, [productId], (err, rows) => {
-      if (err || rows.length === 0) return res.status(404).json({ error: 'ไม่พบสินค้า' });
-  
-      const beacon = rows[0];
-      const currentRSSI = [beacon.RSSI_1, beacon.RSSI_2, beacon.RSSI_3, beacon.RSSI_4];
-      if (currentRSSI.some(val => val === null || typeof val !== 'number')) {
-        return res.status(400).json({ error: 'ค่า RSSI ของสินค้ายังไม่ครบหรือไม่ถูกต้อง' });
-      }
-  
-      const query = `
-        SELECT slot, 
-          AVG(rssi_1) as avg_rssi_1,
-          AVG(rssi_2) as avg_rssi_2,
-          AVG(rssi_3) as avg_rssi_3,
-          AVG(rssi_4) as avg_rssi_4
-        FROM positionrecord GROUP BY slot
-      `;
-  
-      db.query(query, (err2, results) => {
-        if (err2) return res.status(500).json({ error: 'ดึงตำแหน่งล้มเหลว' });
-  
-        let closestSlot = null;
-        let minDistance = Infinity;
-  
-        results.forEach(slotRow => {
-          const slotRSSI = [
-            slotRow.avg_rssi_1,
-            slotRow.avg_rssi_2,
-            slotRow.avg_rssi_3,
-            slotRow.avg_rssi_4
-          ];
-          if (slotRSSI.some(val => val === null)) return;
-  
-          const distance = Math.sqrt(slotRSSI.reduce((sum, avg, i) => {
-            return sum + Math.pow(currentRSSI[i] - avg, 2);
-          }, 0));
-  
-          if (distance < minDistance) {
-            minDistance = distance;
-            closestSlot = slotRow.slot;
-          }
-        });
-  
-        if (closestSlot !== null) {
-          db.query(
-            `REPLACE INTO product_location (ProductID, Slot, DetectedAt) VALUES (?, ?, NOW())`,
-            [productId, closestSlot],
-            () => {
-              res.json({ predictedSlot: closestSlot, distance: minDistance });
-            }
-          );
-        } else {
-          res.json({ predictedSlot: null, distance: null, error: "ไม่สามารถเปรียบเทียบได้" });
+app.post('/collect-rssi', (req, res) => {
+  const { slot, collect, rssi_1, rssi_2 } = req.body
+  console.log(req.body)
+  if (!slot || !collect || rssi_1 == null || rssi_2 == null) {
+    return res.status(400).json({ error: 'ข้อมูลไม่ครบ' })
+  }
+
+  const sql = `
+    INSERT INTO positionrecord (Slot, Collect, RSSI_1, RSSI_2)
+    VALUES (?, ?, ?, ?)
+    ON DUPLICATE KEY UPDATE
+      RSSI_1 = VALUES(RSSI_1),
+      RSSI_2 = VALUES(RSSI_2)
+  `
+
+  db.query(sql, [slot, collect, rssi_1, rssi_2], (err) => {
+    if (err) {
+      console.error(err)
+      return res.status(500).json({ error: 'บันทึกไม่สำเร็จ' })
+    }
+    res.json({ success: true })
+  })
+})
+
+
+app.post('/predict-slot/:productId', async (req, res) => {
+  const productId = req.params.productId;
+
+  // คำนวณตำแหน่งเหมือน GET แต่เพิ่มการบันทึก
+  const getRSSI = `SELECT * FROM product_beacon WHERE productId = ?`;
+  db.query(getRSSI, [productId], (err, rows) => {
+    if (err || rows.length === 0) return res.status(404).json({ error: 'ไม่พบสินค้า' });
+
+    const beacon = rows[0];
+    const currentRSSI = [beacon.RSSI_1, beacon.RSSI_2, beacon.RSSI_3, beacon.RSSI_4];
+    console.log("🔍 RSSI ปัจจุบัน", currentRSSI);
+    if (currentRSSI.some(val => val === null || typeof val !== 'number')) {
+      return res.status(400).json({ error: 'ค่า RSSI ของสินค้ายังไม่ครบหรือไม่ถูกต้อง' });
+    }
+
+    const query = `
+      SELECT slot, 
+        AVG(rssi_1) as avg_rssi_1,
+        AVG(rssi_2) as avg_rssi_2,
+        AVG(rssi_3) as avg_rssi_3,
+        AVG(rssi_4) as avg_rssi_4
+      FROM positionrecord GROUP BY slot
+    `;
+
+    db.query(query, (err2, results) => {
+      if (err2) return res.status(500).json({ error: 'ดึงตำแหน่งล้มเหลว' });
+
+      let closestSlot = null;
+      let minDistance = Infinity;
+      console.table(results); // ค่าจาก positionrecord
+      results.forEach(slotRow => {
+        const slotRSSI = [
+          slotRow.avg_rssi_1,
+          slotRow.avg_rssi_2,
+          slotRow.avg_rssi_3,
+          slotRow.avg_rssi_4
+        ];
+        
+        if (slotRSSI.some(val => val === null)) return;
+
+        const distance = Math.sqrt(slotRSSI.reduce((sum, avg, i) => {
+          return sum + Math.pow(currentRSSI[i] - avg, 2);
+        }, 0));
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestSlot = slotRow.slot;
         }
       });
+      if (closestSlot !== null) {
+        db.query(
+          `REPLACE INTO product_location (ProductID, Slot, DetectedAt) VALUES (?, ?, NOW())`,
+          [productId, closestSlot],
+          () => {
+            res.json({ predictedSlot: closestSlot, distance: minDistance });
+          }
+        );
+      } else {
+        res.json({ predictedSlot: null, distance: null, error: "ไม่สามารถเปรียบเทียบได้" });
+      }
     });
   });
+});
   
   
   app.get('/product-list-full', (req, res) => {
@@ -261,23 +287,7 @@ app.post('/update-rssi-one', (req, res) => {
     })
   })
   
-  app.post('/collect-rssi', (req, res) => {
-    const { slot, collect, rssi_1, rssi_2, rssi_3, rssi_4 } = req.body
   
-    if (!slot || !collect || [rssi_1, rssi_2, rssi_3, rssi_4].some(v => v == null)) {
-      return res.status(400).json({ error: 'ข้อมูลไม่ครบถ้วน' })
-    }
-  
-    const sql = `
-      REPLACE INTO positionrecord (Slot, Collect, RSSI_1, RSSI_2, RSSI_3, RSSI_4)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `
-    db.query(sql, [slot, collect, rssi_1, rssi_2, rssi_3, rssi_4], (err) => {
-      if (err) return res.status(500).json({ error: 'บันทึกไม่สำเร็จ' })
-      res.json({ success: true })
-    })
-  })
-
   app.get('/scan-rssi', async (req, res) => {
     const { name, address } = req.query
     if (!address || !name) return res.status(400).json({ error: 'ข้อมูลไม่ครบ' })

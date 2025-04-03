@@ -4,15 +4,16 @@ import requests
 
 # ⚙️ ตั้งค่าตามเครื่องแต่ละตัว
 LAPTOP_INDEX = 4             # 👈 เปลี่ยนเป็น 1-4 ตามเครื่อง
-PRODUCT_ID = 9               # ID ของสินค้าที่ต้องการผูก
+PRODUCT_ID = 10               # ID ของสินค้าที่ต้องการผูก
 BEACON_MAPPING = {
     "IBKS 105 No 1": 1,
     "IBKS 105 No 2": 2,
     "IBKS 105 No 3": 3,
     "IBKS 105 No 4": 4,
     "IBKS 105 No 5": 5,
+    "IBKS 105 No 6": 6
 }
-BACKEND_URL = "http://localhost:5000/update-rssi-one"  # URL backend
+BACKEND_URL = "http://localhost:5000/update-rssi-current"  # URL backend
 
 # 🚀 ฟังก์ชันส่ง RSSI ไป API
 def send_rssi_to_api(product_id, beacon_id, rssi, laptop_index):
