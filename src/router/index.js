@@ -4,24 +4,27 @@ import LoginView from '@/views/LoginView.vue'
 import ProductList from '@/views/ProductList.vue'
 import SearchProduct from '@/views/SearchProduct.vue'
 import SignUpView from '@/views/SignUpView.vue'
+import CollectRssi from '@/views/CollectRssi.vue'
 
 const routes = [
   {
-    path: '/',
+    path: '/register_beacon',
     name: 'beacon',
     component: BeaconView
   },
   {
+    path: '/collect_rssi',
+    name: 'collect_rssi',
+    component: CollectRssi
+  },
+  {
     path: '/main',
     name: 'main',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/AboutView.vue'),
+    component: () => import('../views/AboutView.vue'),
     meta: { bgColor: "yellow" }
   },
   {
-    path: '/login',
+    path: '/',
     name: 'login',
     component: LoginView,
     meta: { bgColor: "green" }

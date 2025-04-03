@@ -3,6 +3,7 @@ const express = require("express");
 const mysql = require("mysql");
 const cors = require("cors");
 const bodyParser = require("body-parser");
+const axios = require('axios')
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -259,6 +260,38 @@ app.post('/update-rssi-one', (req, res) => {
       res.json(results)
     })
   })
+  
+  app.post('/collect-rssi', (req, res) => {
+    const { slot, collect, rssi_1, rssi_2, rssi_3, rssi_4 } = req.body
+  
+    if (!slot || !collect || [rssi_1, rssi_2, rssi_3, rssi_4].some(v => v == null)) {
+      return res.status(400).json({ error: 'ข้อมูลไม่ครบถ้วน' })
+    }
+  
+    const sql = `
+      REPLACE INTO positionrecord (Slot, Collect, RSSI_1, RSSI_2, RSSI_3, RSSI_4)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `
+    db.query(sql, [slot, collect, rssi_1, rssi_2, rssi_3, rssi_4], (err) => {
+      if (err) return res.status(500).json({ error: 'บันทึกไม่สำเร็จ' })
+      res.json({ success: true })
+    })
+  })
+
+  app.get('/scan-rssi', async (req, res) => {
+    const { name, address } = req.query
+    if (!address || !name) return res.status(400).json({ error: 'ข้อมูลไม่ครบ' })
+  
+    try {
+      const result = await axios.get(`http://localhost:8000/scan`, {
+        params: { name, address }
+      })
+      res.json(result.data)
+    } catch (err) {
+      res.status(500).json({ error: 'สแกนไม่สำเร็จ' })
+    }
+  })
+  
   
   
   

@@ -8,8 +8,6 @@ const router = express.Router();
 
 // 🔹 Register User
 router.post('/register', async (req, res) => {
-    console.log("🔍 Register Request Body:", req.body); // ✅ Debug Data
-
     const {username, firstname, lastname,  password } = req.body;
 
     // ตรวจสอบว่าข้อมูลครบหรือไม่
@@ -19,14 +17,12 @@ router.post('/register', async (req, res) => {
 
     // เข้ารหัสรหัสผ่าน
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log("🔍 Hashed Password:", hashedPassword); // ✅ Debug
 
     // บันทึกลงฐานข้อมูล
     db.query("INSERT INTO user (username, firstname, lastname, password) VALUES (?, ?, ?, ?)", 
     [username, firstname, lastname, hashedPassword], 
     (err, result) => {
         if (err) {
-            console.error("❌ Database Insert Error:", err);
             return res.status(500).json({ error: "Database error" });
         }
         res.json({ message: "User registered successfully" });
@@ -36,8 +32,6 @@ router.post('/register', async (req, res) => {
 
 // 🔹 Login User
 router.post('/login', async (req, res) => {
-    console.log("🔍 Login Request Body:", req.body); // ✅ Debug
-
     const { username, password } = req.body;
     
     if (!username || !password) {
@@ -57,8 +51,6 @@ router.post('/login', async (req, res) => {
             return res.status(500).json({ error: "Password field is missing in database" });
         }
 
-        console.log("🔍 User from DB:", user); // ✅ Debug
-
         const isMatch = await bcrypt.compare(password, user.password); // ตรวจสอบ error ตรงนี้
 
         if (!isMatch) {
@@ -75,8 +67,7 @@ router.post('/login', async (req, res) => {
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
-
-        console.log("🔍 Generated Token:", token); // ✅ Debug JWT
+        
         res.json({ message: "Login successful", token });
     });
 });

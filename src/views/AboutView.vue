@@ -173,11 +173,11 @@ const router = useRouter()
 
 // ฟังก์ชัน
 const gotoBeaconView = () => {
-  router.replace('/')
+  router.replace('/register_beacon')
 }
 
 const logoutSystem = () => {
-  router.replace('/login')
+  router.replace('/')
 }
 
 const saveProdDetail = async () => {

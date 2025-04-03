@@ -11,15 +11,14 @@
             <div class="form-group">
               <label for="password">Password</label>
               <input type="password" id="password" v-model="password" required />
+              <p v-if="errorMessage">{{ errorMessage }}</p>
             </div>
             <button type="submit" class="login">Login</button>
-            <p v-if="errorMessage">{{ errorMessage }}</p>
             <RouterLink to="/sign-up">
               <button type="submit" class="signup">Sign Up</button>
             </RouterLink>
           </form>
         </div>
-        
     </div>
 </template>
 
@@ -44,13 +43,11 @@ export default {
           password: this.password
         });
   
-        console.log("✅ Response from server:", res); // Debug API Response
         localStorage.setItem('token', res.data.token);
         alert("Login Successful!");
 
-        this.$router.push('/main');
+        this.$router.push('/product-list');
       } catch (err) {
-        console.error("❌ Error response:", err.response); // Debug Error Response
         this.errorMessage = err.response?.data?.error || "An unexpected error occurred";
       }
     }

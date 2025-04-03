@@ -73,6 +73,7 @@
             </div>
             <div class="text-center">
                 <button type="button" class="btn-primary mt-4" fdprocessedid="9jl2er" @click="handleSignUp()">Sign Up</button>
+                <button type="button" class="goBack" @click="gotoLogin()">Back</button>
             </div>
         </form>
     </div>
@@ -101,10 +102,13 @@ export default{
             try {
                 const res = await axios.post('http://localhost:5000/api/auth/register', this.formData);
                 alert(res.data.message);
-                this.$router.push('/login');
+                this.$router.push('/');
             } catch (err) {
                 this.errorMessage = err.response.data.error;
             }
+        },
+        async gotoLogin() {
+            this.$router.replace('/');
         }
     }
 }
@@ -141,6 +145,27 @@ export default{
     box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.3); /* เพิ่มเงาเมื่อ hover */
     transform: scale(1.05); /* ทำให้ปุ่มขยายเล็กน้อยเมื่อ hover */
 }
+.goBack {
+    color: #fff;
+    background-color: #f34141;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* เพิ่มเงาให้ปุ่มดูเด่นขึ้น */
+    cursor: pointer;
+    padding: 12px 15px;
+    position: relative;
+    text-transform: uppercase;
+    transition: all 0.3s ease-in-out;
+    -webkit-transition: all .15s ease;
+    transition: all .15s ease;
+    will-change: transform;
+    letter-spacing: .025em;
+    font-size: 1.5rem;
+    font-weight: bold;
+    width: 20%;
+}
+
+
 .card {
     position: relative;
     display: -webkit-box;
