@@ -21,6 +21,8 @@ Set up backend
 pip install Flask
 pip install flask-cors
 pip install bleak
+npm install express mysql cors body-parser axios
+
 ```
 
 ### Customize configuration
