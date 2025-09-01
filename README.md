@@ -15,5 +15,13 @@ npm run serve
 npm run build
 ```
 
+Set up backend
+
+```
+pip install Flask
+pip install flask-cors
+pip install bleak
+```
+
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
