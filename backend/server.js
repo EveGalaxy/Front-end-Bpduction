@@ -126,7 +126,7 @@ app.post("/api/beacons", (req, res) => {
     }
 
     const sql = `
-        INSERT INTO beacon (name, address, major, minor) 
+        INSERT INTO beacon (beaconname, address, major, minor) 
         VALUES (?, ?, ?, ?)
     `;
     const values = [name, address, major, minor];
@@ -165,21 +165,20 @@ app.post('/update-rssi-current', (req, res) => {
 });
 
 app.post('/collect-rssi', (req, res) => {
-  const { slot, collect, rssi_1, rssi_2 } = req.body
+  const {slot, collect, rssi_1} = req.body
   console.log(req.body)
-  if (!slot || !collect || rssi_1 == null || rssi_2 == null) {
+  if (slot == null || collect == null || rssi_1 == null) {
     return res.status(400).json({ error: 'ข้อมูลไม่ครบ' })
   }
-
+  
   const sql = `
-    INSERT INTO positionrecord (Slot, Collect, RSSI_1, RSSI_2)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO positionrecord (Slot, Collect, RSSI_1)
+    VALUES (?, ?, ?)
     ON DUPLICATE KEY UPDATE
-      RSSI_1 = VALUES(RSSI_1),
-      RSSI_2 = VALUES(RSSI_2)
+      RSSI_1 = VALUES(RSSI_1)
   `
 
-  db.query(sql, [slot, collect, rssi_1, rssi_2], (err) => {
+  db.query(sql, [slot, collect, rssi_1], (err) => {
     if (err) {
       console.error(err)
       return res.status(500).json({ error: 'บันทึกไม่สำเร็จ' })
@@ -287,7 +286,6 @@ app.post('/predict-slot/:productId', async (req, res) => {
       res.json(results)
     })
   })
-  
   
   app.get('/scan-rssi', async (req, res) => {
     const { name, address } = req.query

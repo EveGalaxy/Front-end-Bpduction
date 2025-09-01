@@ -2,9 +2,9 @@ import asyncio
 from bleak import BleakScanner
 import requests
 
-# ตั้งค่าตามเครื่องแต่ละตัว
-LAPTOP_INDEX = 1             # เปลี่ยนเป็น 1-4 ตามเครื่อง
-PRODUCT_ID = 13               # ID ของสินค้าที่ผูกกับบีคอน
+# ⚙️ ตั้งค่าตามเครื่องแต่ละตัว
+LAPTOP_INDEX = 2             # 👈 เปลี่ยนเป็น 1-4 ตามเครื่อง
+PRODUCT_ID = 1               # ID ของสินค้าที่ต้องการผูก
 BEACON_MAPPING = {
     "IBKS 105 No 1": 1,
     "IBKS 105 No 2": 2,
@@ -15,7 +15,7 @@ BEACON_MAPPING = {
 }
 BACKEND_URL = "http://localhost:5000/update-rssi-current"  # URL backend
 
-# ฟังก์ชันส่ง RSSI ไป API
+# 🚀 ฟังก์ชันส่ง RSSI ไป API
 def send_rssi_to_api(product_id, beacon_id, rssi, laptop_index):
     payload = {
         "productId": product_id,
@@ -33,7 +33,7 @@ def send_rssi_to_api(product_id, beacon_id, rssi, laptop_index):
     except Exception as e:
         print(f"❌ เกิดข้อผิดพลาดในการส่ง: {e}")
 
-# ฟังก์ชันสแกน BLE แล้วส่งค่า
+# 🔍 ฟังก์ชันสแกน BLE แล้วส่งค่า
 async def scan_and_send():
     print(f"🔍 กำลังสแกน Beacon: ...")
     devices = await BleakScanner.discover(timeout=5.0)
@@ -46,11 +46,11 @@ async def scan_and_send():
 
     print(f"⚠️ ไม่พบ Beacon ")
 
-# Loop สแกนทุก 10 วินาที
+# 🔁 Loop สแกนทุก 10 วินาที
 async def loop_scan(interval=10):
     while True:
         await scan_and_send()
         await asyncio.sleep(interval)
 
-# เริ่มรัน
+# ✅ เริ่มรัน
 asyncio.run(loop_scan())

@@ -49,7 +49,7 @@
           <label class="block text-gray-700 font-medium mb-1">Beacon ที่ต้องการติดตั้ง</label>
           <select
             v-model="beaconId"
-            required
+            
             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-400"
           >
             <option disabled selected value="">-- เลือก Beacon --</option>
@@ -121,7 +121,7 @@ const gotoBeaconView = () => {
 
 const showSuccessModal = ref(false)
 const saveProdDetail = async () => {
-  if (!name.value || category.value === '--ประเภทของสินค้า--' || beaconId.value === '--ประเภทของบีคอน--') {
+  if (!name.value || category.value === '--ประเภทของสินค้า--') {
     alert('กรุณากรอกข้อมูลให้ครบ')
     return
   }

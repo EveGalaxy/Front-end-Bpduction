@@ -163,9 +163,9 @@ const scanRSSI = async () => {
     const result = await res.json()
 
     form.value.rssi_1 = result.rssi_1
-    form.value.rssi_2 = result.rssi_2
-    form.value.rssi_3 = result.rssi_3
-    form.value.rssi_4 = result.rssi_4
+    // form.value.rssi_2 = result.rssi_2
+    // form.value.rssi_3 = result.rssi_3
+    // form.value.rssi_4 = result.rssi_4
 
   } catch (err) {
     console.error("❌ Error while scanning RSSI:", err)
@@ -181,8 +181,7 @@ const submitRSSI = async () => {
   const payload = {
     slot: form.value.slot,
     collect: form.value.collect,
-    rssi_1: form.value.rssi_1,
-    rssi_2: form.value.rssi_2
+    rssi_1: form.value.rssi_1
   }
 
   try {

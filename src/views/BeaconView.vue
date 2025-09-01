@@ -41,7 +41,7 @@
             id="beacon-major"
             v-model="form.major"
             readonly
-            class="w-full md:w-2/3 px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg"
+            class="w-full md:w-2/3 px-4 py-2 text-blue-500 bg-gray-100 border border-gray-300 rounded-lg"
           />
         </div>
 
@@ -53,7 +53,7 @@
             id="beacon-minor"
             v-model="form.minor"
             readonly
-            class="w-full md:w-2/3 px-4 py-2 bg-gray-100 border border-gray-300 rounded-lg"
+            class="w-full md:w-2/3 px-4 py-2 text-blue-500 bg-gray-100 border border-gray-300 rounded-lg"
           />
         </div>
 
@@ -149,7 +149,7 @@ export default {
           const data = await response.json();
 
           console.log("📡 ข้อมูลจาก API:", data);
-
+          
           if (data.major !== undefined && data.minor !== undefined) {
             this.form.major = data.major;
             this.form.minor = data.minor
