@@ -66,7 +66,9 @@
           class="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50"
         >
           <div class="bg-white p-6 rounded-2xl shadow-2xl max-w-sm w-full animate-fade-in text-center">
-            <h3 class="text-xl font-semibold text-green-600 mb-4">✅ อัปเดตตำแหน่งสินค้าสำเร็จ !</h3>
+            <p><span class="font-semibold text-xl text-green-600">วางสินค้าไว้ที่ Slot: {{ slotResult.predictedSlot }}</span></p>
+            <p><span class="font-semibold text-xl text-green-600">ชั้นวาง: {{ slotResult.shelfLevel }} ({{ slotResult.shelfLabel }})</span></p>
+            <p><span class="font-semibold text-xl text-green-600">ระยะห่างที่คำนวณได้: {{ slotResult.distance.toFixed(2) }}</span></p>
             <button
               @click="showUpdateModal = false"
               class="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg transition-all"
@@ -141,14 +143,24 @@ const fetchData = async () => {
   usedCodes.value = data.map(p => p.LocationCode).filter(Boolean)
 }
 
+const slotResult = ref(null)
+
 const updateSlot = async (productId) => {
-  const res = await fetch(`http://localhost:5000/predict-slot/${productId}`, { method: 'POST' })
-  const result = await res.json()
-  if (result.predictedSlot) {
-    showUpdateModal.value = true
-    await fetchData()
-  } else {
-    alert('ไม่สามารถอัปเดตตำแหน่งได้')
+  try {
+    const res = await fetch(`http://localhost:5000/predict-slot/${productId}`, { method: 'POST' })
+    const result = await res.json()
+
+    if (result.predictedSlot) {
+      slotResult.value = result
+      showUpdateModal.value = true
+      await fetchData()
+    } else {
+      alert(result.message || 'ไม่สามารถอัปเดตตำแหน่งได้')
+    }
+
+  } catch (error) {
+    console.error("❌ Error:", error)
+    alert('เชื่อมต่อกับเซิร์ฟเวอร์ล้มเหลว')
   }
 }
 

@@ -3,8 +3,8 @@ from bleak import BleakScanner
 import requests
 
 # ⚙️ ตั้งค่าตามเครื่องแต่ละตัว
-LAPTOP_INDEX = 2             # 👈 เปลี่ยนเป็น 1-4 ตามเครื่อง
-PRODUCT_ID = 1               # ID ของสินค้าที่ต้องการผูก
+LAPTOP_INDEX = 1             # 👈 เปลี่ยนเป็น 1-4 ตามเครื่อง
+PRODUCT_ID = 2               # ID ของสินค้าที่ต้องการผูก
 BEACON_MAPPING = {
     "IBKS 105 No 1": 1,
     "IBKS 105 No 2": 2,

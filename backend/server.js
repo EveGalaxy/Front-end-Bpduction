@@ -191,25 +191,34 @@ app.post('/collect-rssi', (req, res) => {
 app.post('/predict-slot/:productId', async (req, res) => {
   const productId = req.params.productId;
 
-  // คำนวณตำแหน่งเหมือน GET แต่เพิ่มการบันทึก
+  // 1. ดึง RSSI จาก product_beacon
   const getRSSI = `SELECT * FROM product_beacon WHERE productId = ?`;
   db.query(getRSSI, [productId], (err, rows) => {
     if (err || rows.length === 0) return res.status(404).json({ error: 'ไม่พบสินค้า' });
 
     const beacon = rows[0];
-    const currentRSSI = [beacon.RSSI_1, beacon.RSSI_2, beacon.RSSI_3, beacon.RSSI_4];
-    console.log("🔍 RSSI ปัจจุบัน", currentRSSI);
-    if (currentRSSI.some(val => val === null || typeof val !== 'number')) {
-      return res.status(400).json({ error: 'ค่า RSSI ของสินค้ายังไม่ครบหรือไม่ถูกต้อง' });
+    const currentRSSI = [beacon.RSSI_1, beacon.RSSI_2, beacon.RSSI_3];
+
+    console.log("🔍 RSSI ปัจจุบัน:", currentRSSI);
+
+    // 2. ตรวจสอบว่า RSSI ทั้งหมดเป็น null หรือ 0 → ถือว่ายังไม่วาง
+    if (currentRSSI.every(val => val === null || val === 0 || typeof val !== 'number')) {
+      return res.json({
+        productId,
+        predictedSlot: null,
+        shelfLevel: null,
+        message: "สินค้าไม่ได้อยู่บนชั้นวาง"
+      });
     }
 
+    // 3. ดึงค่าเฉลี่ย RSSI ของแต่ละ slot
     const query = `
       SELECT slot, 
         AVG(rssi_1) as avg_rssi_1,
         AVG(rssi_2) as avg_rssi_2,
-        AVG(rssi_3) as avg_rssi_3,
-        AVG(rssi_4) as avg_rssi_4
-      FROM positionrecord GROUP BY slot
+        AVG(rssi_3) as avg_rssi_3
+      FROM positionrecord
+      GROUP BY slot
     `;
 
     db.query(query, (err2, results) => {
@@ -217,15 +226,14 @@ app.post('/predict-slot/:productId', async (req, res) => {
 
       let closestSlot = null;
       let minDistance = Infinity;
-      console.table(results); // ค่าจาก positionrecord
+
       results.forEach(slotRow => {
         const slotRSSI = [
           slotRow.avg_rssi_1,
           slotRow.avg_rssi_2,
-          slotRow.avg_rssi_3,
-          slotRow.avg_rssi_4
+          slotRow.avg_rssi_3
         ];
-        
+
         if (slotRSSI.some(val => val === null)) return;
 
         const distance = Math.sqrt(slotRSSI.reduce((sum, avg, i) => {
@@ -237,21 +245,53 @@ app.post('/predict-slot/:productId', async (req, res) => {
           closestSlot = slotRow.slot;
         }
       });
+
       if (closestSlot !== null) {
-        db.query(
-          `REPLACE INTO product_location (ProductID, Slot, DetectedAt) VALUES (?, ?, NOW())`,
-          [productId, closestSlot],
-          () => {
-            res.json({ predictedSlot: closestSlot, distance: minDistance });
-          }
-        );
+        // 4. บันทึกลง product_location
+        const saveQuery = `
+          REPLACE INTO product_location (ProductID, Slot, DetectedAt)
+          VALUES (?, ?, NOW())
+        `;
+        db.query(saveQuery, [productId, closestSlot], (err3) => {
+          if (err3) return res.status(500).json({ error: 'บันทึกตำแหน่งล้มเหลว' });
+
+          // 5. JOIN กับ slotlocation เพื่อหาชั้น
+          const joinQuery = `
+            SELECT sl.ShelfLabel, sl.ShelfLevel
+            FROM slotlocation sl
+            WHERE sl.Slot = ?
+          `;
+          db.query(joinQuery, [closestSlot], (err4, locRows) => {
+            if (err4 || locRows.length === 0) {
+              return res.json({
+                productId,
+                predictedSlot: closestSlot,
+                shelfLevel: null,
+                message: "ไม่พบข้อมูลชั้นของ Slot นี้"
+              });
+            }
+
+            const shelf = locRows[0];
+            res.json({
+              productId,
+              predictedSlot: closestSlot,
+              shelfLevel: shelf.ShelfLevel,
+              shelfLabel: shelf.ShelfLabel,
+              distance: minDistance
+            });
+          });
+        });
       } else {
-        res.json({ predictedSlot: null, distance: null, error: "ไม่สามารถเปรียบเทียบได้" });
+        res.json({
+          productId,
+          predictedSlot: null,
+          shelfLevel: null,
+          message: "ไม่สามารถเปรียบเทียบตำแหน่งได้"
+        });
       }
     });
   });
 });
-  
   
   app.get('/product-list-full', (req, res) => {
     const sql = `
